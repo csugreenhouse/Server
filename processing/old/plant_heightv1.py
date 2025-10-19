@@ -72,5 +72,6 @@ def find_height_plant(file_path,dirt_height, axis_x, axis_y, pixels_per_cm, bias
     show_plant_graph(plant_image,axis_y,axis_x,bias)
       
 find_height_plant(file_path,dirt_height,axis_x,axis_y,pixels_per_cm,bias)
+show_plant_graph("processing/plant.jpg",0,0,bias)
     
     

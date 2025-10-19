@@ -47,8 +47,6 @@ else:
     gbias = 175
     bbias = 150
     
-    print(find_best_bias(image, axy, axx, 29))
-    
     
     image = cv2.flip(image, 0)
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
