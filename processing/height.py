@@ -212,12 +212,13 @@ def generate_query(file_path):
     barcode_metrics = get_barcode_metrics(file_path)
     specimen_id = barcode_metrics[0].text
     height_metrics = compute_height_metrics(file_path)
+    print_graph_from_metrics(height_metrics,"Server/processing/test/images/output.png")
     height = height_metrics["height_est"]
     query = f"INSERT INTO HEIGHT_LOG (SPECIMEN_ID, HEIGHT_CM) VALUES (\'{specimen_id}\',\'{height}\')"
     print(query)
     return query
 
-generate_query("Server/processing/test/images/Image1.jpg")
+
 
 
     
