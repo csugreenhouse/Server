@@ -1,6 +1,7 @@
 import cv2
 import matplotlib.pyplot as plt
 import zxingcpp
+import psycopg2
 
 def plant_image_found(file_path):
     image = cv2.flip(cv2.imread(file_path),0)
