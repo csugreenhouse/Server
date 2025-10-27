@@ -12,16 +12,16 @@ if str(ROOT) not in os.sys.path:
 def test_image1_height_between_1_and_2():
     """
     For the sample image, the computed height_est should be in [1.0, 2.0].
-    This uses compute_height_metrics() directly (no barcode dependency).
+    This uses get_height_metrics() directly (no barcode dependency).
     """
     mod = importlib.import_module("Server.processing.height")
-    assert hasattr(mod, "compute_height_metrics"), "compute_height_metrics() not found"
+    assert hasattr(mod, "get_height_metrics"), "get_height_metrics() not found"
 
     img_path = Path(__file__).parent / "images" / "Image1.jpg"
     assert img_path.exists(), f"Missing test image: {img_path}"
 
-    res = mod.compute_height_metrics(str(img_path))
-    assert "height_est" in res, "compute_height_metrics() returned no 'height_est'"
+    res = mod.get_height_metrics(str(img_path))
+    assert "height_est" in res, "get_height_metrics() returned no 'height_est'"
     h = float(res["height_est"])
 
     # Allow a tiny tolerance for float math
