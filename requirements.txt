@@ -1,0 +1,10 @@
+# Core dependencies
+opencv-python-headless>=4.9
+zxing-cpp>=2.2
+psycopg2-binary>=2.9
+matplotlib>=3.9
+pytest>=8.3
+
+# Optional quality-of-life tools
+numpy>=1.26
+pandas>=2.2
