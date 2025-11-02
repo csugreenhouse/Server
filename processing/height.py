@@ -33,6 +33,51 @@ def is_black_pixel(pixel):
 def is_white_pixel(pixel):
     return pixel[0]>170 and pixel[1]>170 and pixel[2]>170
 
+def is_green_pixel(pixel):
+    return pixel[0]<150 and pixel[1]>100 and pixel[2]<100
+
+def green_pixel_at_y(image, y, start_x):
+    h,w,_ = image.shape
+    for x in range(start_x, w):
+        if is_green_pixel(image[y,x]):
+            return (x,y)
+    return False
+
+def find_top_green(image, top_right_barcode_point, bot_right_barcode_point):
+    print(image[1600,2400])
+    h,w,_ = image.shape
+    x1 = top_right_barcode_point[0]
+    y1 = top_right_barcode_point[1] # 400 ish
+    x2 = bot_right_barcode_point[0]
+    y2 = bot_right_barcode_point[1] # 1800 ish
+
+    y_upper = y2
+    y_lower = y1
+
+    top_green = None
+    
+    while (y_upper - y_lower) > 1:  
+        y = int((y_upper + y_lower)/2) 
+        print(f"green pixel at y {y} ?")
+        pixel = green_pixel_at_y(image, int(y), x1)
+        if pixel:
+            print(f"YES")
+            print(f"found green pixel at {pixel}")
+            top_green = pixel
+            y_upper = y
+        else:
+            print(f"NO")
+            y_lower = y
+
+    return top_green
+
+
+       
+
+
+    
+
+
 
 
 def find_top(image,point):
@@ -79,18 +124,7 @@ def print_graph_from_metrics(res, out_path="processing/test/images/output.png"):
     plt.savefig(out_path, bbox_inches="tight")
     plt.close(fig)
 
-
-            
-            
-
-
-#def find_top_right(image,point):
-
-#def find_bot_right(image,point):
-
-#def find_bot_left(image,point):
-
-def get_height_metrics(file_path, scale_units=5.0):
+def get_height_metrics(file_path, scale_units=7.5):
     image = find_image(file_path)
     h,w,_ = image.shape
     barcode = get_barcode_metrics(file_path)
@@ -99,7 +133,10 @@ def get_height_metrics(file_path, scale_units=5.0):
     trp = find_top(image,barcode_point[1])
     brp = find_bot(image, barcode_point[2])
     blp = find_bot(image, barcode_point[3])
-    top_green = (2500,1500)
+    top_green = find_top_green(image, trp, brp)
+
+    if top_green is None:
+        raise ValueError("Could not find top green point")
 
     for name, pt in [("tlp", tlp), ("trp", trp), ("blp", blp), ("brp", brp), ("top_green", top_green)]:
         if pt is None:
