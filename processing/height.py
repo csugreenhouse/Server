@@ -14,8 +14,10 @@ def get_barcode_metrics(file_path):
     img = find_image(file_path)
     rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     results = zxingcpp.read_barcodes(rgb)
-    if (len(results) != 1):
-        raise ValueError(f"Multiple or no barcodes detected")
+    if (len(results) == 0):
+        raise ValueError(f"No barcodes detected")
+    if (len(results) > 1):
+        print(f"Warning: multiple ({len(results)}) barcodes detected; using first one")
     results[0]
     return results[0]
 
@@ -70,15 +72,6 @@ def find_top_green(image, top_right_barcode_point, bot_right_barcode_point):
             y_lower = y
 
     return top_green
-
-
-       
-
-
-    
-
-
-
 
 def find_top(image,point):
     h,w,_ = image.shape
@@ -276,9 +269,5 @@ def print_graph_from_metrics(res, out_path="processing/test/images/output.png"):
 
     plt.savefig(out_path, bbox_inches="tight")
     plt.close(fig)
-
-height_metrics = get_height_metrics("processing/test/images/Image1.jpg") 
-print(height_metrics["height_est"])
-print_graph_from_metrics(height_metrics)
 
 
