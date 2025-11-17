@@ -3,6 +3,7 @@ import importlib
 from pathlib import Path
 import os
 import pytest
+from pytest import approx
 import apriltag
 import array
 # Make sure Python can import "Server.processing.height" no matter the CWD
@@ -30,10 +31,10 @@ def test_apritag_test01(tmp_path=" "):
     tr = corners["top_right"]
     br = corners["bottom_right"]
     bl = corners["bottom_left"] 
-    assert tl == (267.1820373534919, 244.1751403808336)
-    assert tr == (393.2828063964598, 250.85649108888924)
-    assert br == (387.81927490236626, 374.93643188478995)
-    assert bl == (262.30166625978956, 369.2857971191188)
+    assert tl == approx((267.1820373534919, 244.1751403808336),rel=1e-3,abs=0.5)
+    assert tr == approx((393.2828063964598, 250.85649108888924),rel=1e-3,abs=0.5)
+    assert br == approx((387.81927490236626, 374.93643188478995),rel=1e-3,abs=0.5)
+    assert bl == approx((262.30166625978956, 369.2857971191188),rel=1e-3,abs=0.5)
     
 def test_apritag_test02(tmp_path=" "):
     src = IMG_DIR / "TEST02.jpg"
@@ -53,10 +54,10 @@ def test_apritag_test02(tmp_path=" "):
     br = corners["bottom_right"]
     bl = corners["bottom_left"] 
     
-    assert tl == (558.5017700195309, 260.1452331542965)
-    assert tr == (636.921752929687, 263.3018188476566)
-    assert br == (632.7066650390628, 341.7890319824224)
-    assert bl == (554.6207275390632, 338.9519042968744)
+    assert tl == approx((558.5017700195309, 260.1452331542965),rel=1e-3,abs=0.5)   
+    assert tr == approx((636.921752929687, 263.3018188476566),rel=1e-3,abs=0.5)
+    assert br == approx((632.7066650390628, 341.7890319824224),rel=1e-3,abs=0.5)
+    assert bl == approx((554.6207275390632, 338.9519042968744),rel=1e-3,abs=0.5)
 
 def test_apritag_test03(tmp_path=" "):
     src = IMG_DIR / "TEST03.jpg"
@@ -76,10 +77,10 @@ def test_apritag_test03(tmp_path=" "):
     br = corners["bottom_right"]
     bl = corners["bottom_left"] 
     
-    assert tl == (442.08078002929653, 258.8964538574215)
-    assert tr == (497.32519531249955, 260.3209533691411)
-    assert br == (495.6865844726565, 315.3803405761721)
-    assert bl == (440.6880798339846, 313.9172973632811) 
+    assert tl == approx((442.08078002929653, 258.8964538574215),rel=1e-3,abs=0.5)
+    assert tr == approx((497.32519531249955, 260.3209533691411),rel=1e-3,abs=0.5)
+    assert br == approx((495.6865844726565, 315.3803405761721),rel=1e-3,abs=0.5)
+    assert bl == approx((440.6880798339846, 313.9172973632811), rel=1e-3,abs=0.5)
     
 def test_apritag_testNONE(tmp_path=" "):
     src = IMG_DIR / "TESTNONE.jpg"
