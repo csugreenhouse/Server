@@ -18,5 +18,5 @@ def save_image(camera_num, url,image_dir):
 
 while True:
     print(f"http://{CAMERA_IPs[0]}/")
-    save_image(1,f"http://{CAMERA_IPs[0]}/capture","")
+    save_image(1,f"http://{CAMERA_IPs[0]}/capture","/srv/samba/plants/image/test")
     time.sleep(60)

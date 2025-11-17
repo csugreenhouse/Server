@@ -47,6 +47,14 @@ def scan_apriltag(image_path):
 
 def plot_image(image_path, out_path="processing/test/images/output.png"):
     image = cv2.imread(image_path)
+    try:
+        apriltag = scan_apriltag(image_path)
+    except ValueError as e:
+        print(f"Apriltag detection failed: {e}")
+        return
+    for key in ["blp", "brp", "trp", "tlp"]:
+        x, y = res[key]
+        ax.add_patch(plt.Circle((x, y), 50, color='purple', fill=True))
     graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     fig, ax = plt.subplots()
     ax.imshow(graph_rgb)
