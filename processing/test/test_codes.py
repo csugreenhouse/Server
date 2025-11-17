@@ -23,6 +23,7 @@ def test_TEST01_apriltag_detection():
     try:
         tag = mod.scan_apriltag(str(img_path))
         assert tag is not None, "No tag returned"
+        tag_id = tag["tag_id"]
         assert tag["tag_id"] == 1, f"Unexpected tag ID: {tag["tag_id"]}"
         assert tag["decision_margin"] > 40, f"Decision margin too low: {tag["decision_margin"]}"
         assert abs(tag["center"][0] - 1768)<1, "Tag center x is not correct"
@@ -81,7 +82,7 @@ def test_TEST03_apriltag_detection():
 
 def test_TEST04_apriltag_detection():
     """
-    Test that the apriltag in TEST04.jpeg is detected correctly.
+    Test that the apriltag in TEST01.jpeg is detected correctly.
     """
     mod = importlib.import_module("Server.processing.height")
     assert hasattr(mod, "scan_apriltag"), "scan_apriltag() not found"
