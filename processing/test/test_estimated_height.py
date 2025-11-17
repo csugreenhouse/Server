@@ -3,6 +3,7 @@ import importlib
 from pathlib import Path
 import os
 import pytest
+from processing import height
 
 # Make sure Python can import "Server.processing.height" no matter the CWD
 ROOT = Path(__file__).resolve().parents[2]  # repo root (contains "Server")

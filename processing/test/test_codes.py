@@ -3,6 +3,7 @@ import importlib
 from pathlib import Path
 import os
 import pytest
+from pytest import approx
 import apriltag
 import array
 # Make sure Python can import "Server.processing.height" no matter the CWD
@@ -10,93 +11,84 @@ ROOT = Path(__file__).resolve().parents[2]  # repo root (contains "Server")
 if str(ROOT) not in os.sys.path:
     os.sys.path.insert(0, str(ROOT))
 
-def test_TEST01_apriltag_detection():
-    """
-    Test that the apriltag in TEST01.jpeg is detected correctly.
-    """
-    mod = importlib.import_module("Server.processing.height")
-    assert hasattr(mod, "scan_apriltag"), "scan_apriltag() not found"
+BASE_DIR = Path(__file__).resolve().parent
+IMG_DIR = BASE_DIR / "images" / "test_codes"
 
-    img_path = Path(__file__).parent / "images" / "TEST01.jpeg"
-    assert img_path.exists(), f"Missing test image: {img_path}"
-
-    try:
-        tag = mod.scan_apriltag(str(img_path))
-        assert tag is not None, "No tag returned"
-        tag_id = tag["tag_id"]
-        assert tag["tag_id"] == 1, f"Unexpected tag ID: {tag["tag_id"]}"
-        assert tag["decision_margin"] > 40, f"Decision margin too low: {tag["decision_margin"]}"
-        assert abs(tag["center"][0] - 1768)<1, "Tag center x is not correct"
-        assert abs(tag["center"][0] - 1768)<1, "Tag center y is not correct"
-
-        # tag corners are at [1398.66125489, 1485.99841309],\n       [2130.49340821, 1470.10461425],\n       [2145.83374023, 2211.55932617],\n       [1404.45263671, 2222.5925293 ]
-        assert abs(tag["tag_corners"][0][0]-1398.66125489)<1, "Tag corner 0 x is not correct"
-        assert abs(tag["tag_corners"][0][1]-1485.99841309)<1, "Tag corner 0 y is not correct"
-        assert abs(tag["tag_corners"][1][0]-2130.49340821)<1, "Tag corner 1 x is not correct"
-        assert abs(tag["tag_corners"][1][1]-1470.10461425)<1, "Tag corner 1 y is not correct"
-        assert abs(tag["tag_corners"][2][0]-2145.83374023)<1, "Tag corner 2 x is not correct"
-        assert abs(tag["tag_corners"][2][1]-2211.55932617)<1, "Tag corner 2 y is not correct"
-        assert abs(tag["tag_corners"][3][0]-1404.45263671)<1, "Tag corner 3 x is not correct"
-        assert abs(tag["tag_corners"][3][1]-2222.5925293)<1, "Tag corner 3 y is not correct"    
-
-    except ValueError as e:
-        pytest.fail(f"Apriltag detection failed: {e}")
-
-def test_TEST02_apriltag_detection():
-    """
-    Test that the apriltag in TEST02.jpeg is detected correctly.
-    """
-    mod = importlib.import_module("Server.processing.height")
-    assert hasattr(mod, "scan_apriltag"), "scan_apriltag() not found"
-
-    img_path = Path(__file__).parent / "images" / "TEST02.jpeg"
-    assert img_path.exists(), f"Missing test image: {img_path}"
-
-    try:
-        tag = mod.scan_apriltag(str(img_path))
-        assert tag is not None, "No tag returned"
-        assert tag["tag_id"] == 2, f"Unexpected tag ID: {tag["tag_id"]}"
-        assert tag["decision_margin"] > 40, f"Decision margin too low: {tag["decision_margin"]}"
-        assert abs(tag["center"][0] - 1460)<1, "Tag center x is not correct"
-        assert abs(tag["center"][1] - 1751)<1, "Tag center y is not correct"
-
-    except ValueError as e:
-        pytest.fail(f"Apriltag detection failed: {e}")
-
-""""
-def test_TEST03_apriltag_detection():
+def test_apritag_test01(tmp_path=" "):
+    src = IMG_DIR / "TEST01.jpg"
+    dst = IMG_DIR / "TEST01_out.png"
     
-    Test that the apriltag in TEST03.jpeg is detected correctly.
     mod = importlib.import_module("Server.processing.height")
     assert hasattr(mod, "scan_apriltag"), "scan_apriltag() not found"
-
-    img_path = Path(__file__).parent / "images" / "TEST04.jpeg"
-    assert img_path.exists(), f"Missing test image: {img_path}"
     
-    try:
-        tag = mod.scan_apriltag(str(img_path))
-
-    except ValueError as e:
-        pytest.fail(f"Apriltag detection failed: {e}")
-"""
-
-def test_TEST04_apriltag_detection():
-    """
-    Test that the apriltag in TEST01.jpeg is detected correctly.
-    """
+    #mod.plot_image(str(src), str(dst))
+    tag_info = mod.scan_apriltag(str(src))
+    
+    tag_info["tag_id"] == 1
+    assert "corners" in tag_info, "scan_apriltag() returned no 'corners'"
+    corners = tag_info["corners"]
+    tl = corners["top_left"]
+    tr = corners["top_right"]
+    br = corners["bottom_right"]
+    bl = corners["bottom_left"] 
+    assert tl == approx((267.1820373534919, 244.1751403808336),rel=1e-3,abs=0.5)
+    assert tr == approx((393.2828063964598, 250.85649108888924),rel=1e-3,abs=0.5)
+    assert br == approx((387.81927490236626, 374.93643188478995),rel=1e-3,abs=0.5)
+    assert bl == approx((262.30166625978956, 369.2857971191188),rel=1e-3,abs=0.5)
+    
+def test_apritag_test02(tmp_path=" "):
+    src = IMG_DIR / "TEST02.jpg"
+    dst = IMG_DIR / "TEST02_out.png"
+    
     mod = importlib.import_module("Server.processing.height")
     assert hasattr(mod, "scan_apriltag"), "scan_apriltag() not found"
+    assert hasattr(mod, "plot_image"), "plot_image() not found"
+    
+    #mod.plot_image(src, dst)
+    tag_info = mod.scan_apriltag(str(src))
+    
+    assert "corners" in tag_info, "scan_apriltag() returned no 'corners'"
+    corners = tag_info["corners"]
+    tl = corners["top_left"]
+    tr = corners["top_right"]
+    br = corners["bottom_right"]
+    bl = corners["bottom_left"] 
+    
+    assert tl == approx((558.5017700195309, 260.1452331542965),rel=1e-3,abs=0.5)   
+    assert tr == approx((636.921752929687, 263.3018188476566),rel=1e-3,abs=0.5)
+    assert br == approx((632.7066650390628, 341.7890319824224),rel=1e-3,abs=0.5)
+    assert bl == approx((554.6207275390632, 338.9519042968744),rel=1e-3,abs=0.5)
 
-    img_path = Path(__file__).parent / "images" / "TEST04.jpeg"
-    assert img_path.exists(), f"Missing test image: {img_path}"
-
-    try:
-        tag = mod.scan_apriltag(str(img_path))
-        assert tag is not None, "No tag returned"
-        assert tag["tag_id"] == 4, f"Unexpected tag ID: {tag["tag_id"]}"
-        assert tag["decision_margin"] > 40, f"Decision margin too low: {tag["decision_margin"]}"
-        assert abs(tag["center"][0] - 1666)<1, "Tag center x is not correct"
-        assert abs(tag["center"][1] - 1741)<1, "Tag center y is not correct"
-
-    except ValueError as e:
-        pytest.fail(f"Apriltag detection failed: {e}")
+def test_apritag_test03(tmp_path=" "):
+    src = IMG_DIR / "TEST03.jpg"
+    dst = IMG_DIR / "TEST03_out.png"
+    
+    mod = importlib.import_module("Server.processing.height")
+    assert hasattr(mod, "scan_apriltag"), "scan_apriltag() not found"
+    assert hasattr(mod, "plot_image"), "plot_image() not found"
+    
+    #mod.plot_image(src, dst)
+    tag_info = mod.scan_apriltag(str(src))
+    
+    assert "corners" in tag_info, "scan_apriltag() returned no 'corners'"
+    corners = tag_info["corners"]
+    tl = corners["top_left"]
+    tr = corners["top_right"]
+    br = corners["bottom_right"]
+    bl = corners["bottom_left"] 
+    
+    assert tl == approx((442.08078002929653, 258.8964538574215),rel=1e-3,abs=0.5)
+    assert tr == approx((497.32519531249955, 260.3209533691411),rel=1e-3,abs=0.5)
+    assert br == approx((495.6865844726565, 315.3803405761721),rel=1e-3,abs=0.5)
+    assert bl == approx((440.6880798339846, 313.9172973632811), rel=1e-3,abs=0.5)
+    
+def test_apritag_testNONE(tmp_path=" "):
+    src = IMG_DIR / "TESTNONE.jpg"
+    
+    mod = importlib.import_module("Server.processing.height")
+    assert hasattr(mod, "scan_apriltag"), "scan_apriltag() not found"
+    
+    with pytest.raises(ValueError) as excinfo:
+        tag_info = mod.scan_apriltag(str(src))
+    
+    assert "No april tags at all have been found" in str(excinfo.value)

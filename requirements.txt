@@ -1,10 +1,33 @@
-# Core dependencies
+# Core computer vision & image processing
 opencv-python-headless>=4.9
-zxing-cpp>=2.2
-psycopg2-binary>=2.9
-matplotlib>=3.9
-pytest>=8.3
-
-# Optional quality-of-life tools
+Pillow>=10.0
+scipy>=1.12
 numpy>=1.26
+matplotlib>=3.9
+
+# AprilTag detection
+pupil-apriltags>=1.0.0  # most stable, widely used wrapper
+
+apriltag
+
+# QR & barcode scanning
+zxing-cpp>=2.2
+
+# Database integration (PostgreSQL)
+psycopg2-binary>=2.9
+
+# Data analysis / utility
 pandas>=2.2
+
+# HTTP requests (used in your camera-saving script)
+requests>=2.32
+
+# Test framework
+pytest>=8.3
+pytest-cov>=5.0   # optional, for coverage
+
+# Optional: for saving logs or loading .env secrets
+python-dotenv>=1.0
+
+# Optional: if you are using image transformations or need skimage filters
+scikit-image>=0.24
