@@ -3,7 +3,7 @@ import argparse
 import cv2
 import matplotlib.pyplot as plt
 from pathlib import Path
-
+from ultralytics import YOLO
 def scan_apriltag(image_path):
     image = cv2.imread(image_path)
 
@@ -15,7 +15,7 @@ def scan_apriltag(image_path):
     detector = apriltag.Detector(options)
     results = detector.detect(gray)
     
-    DECISION_MARGIN = 40 # THIS ALLOWS FOR THE 
+    DECISION_MARGIN = 40
 
     valid_april_tags = []
 
@@ -74,7 +74,20 @@ def plot_image(image_path, out_path):
         x, y = corner
         ax.add_patch(plt.Circle((x, y), 10, color=color, fill=True))
         print(f"Plotted corner at ({x}, {y}) with color {color}")
-        
+    
+    plant_info = find_plant(image_path)
     
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
+
+def find_plant(image_path):
+    model = YOLO("yolov8n.pt")
+    results = model.predict(source=image_path, conf=0.25, save=False, save_txt=False)
+    for box in results[0].boxes:
+        x1, y1, x2, y2 = box.xyxy[0]
+        cls = int(box.cls[0])
+        conf = float(box.conf[0])
+        print(f"Detected class {cls} with confidence {conf:.2f} at [{x1}, {y1}, {x2}, {y2}]")
+        return {x1, y1, x2, y2}
+    return False
+    

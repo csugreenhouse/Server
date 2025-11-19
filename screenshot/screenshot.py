@@ -2,8 +2,8 @@ import requests
 from datetime import datetime
 import time
 
-CAMERA_IPs = ["192.168.0.56"]
-
+CAMERA_IPs = ["192.168.0.56",]
+CAMERA_NAMEs = ["esp32_1",]
 def save_image(camera_num, url,image_dir):
     print(url)
     try:
@@ -19,4 +19,4 @@ def save_image(camera_num, url,image_dir):
 while True:
     print(f"http://{CAMERA_IPs[0]}/")
     save_image(1,f"http://{CAMERA_IPs[0]}/capture","/srv/samba/plants/image/test")
-    time.sleep(60)
+    time.sleep(60*30)
