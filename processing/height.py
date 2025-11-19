@@ -57,37 +57,41 @@ def plot_image(image_path, out_path):
     if image is None:
         raise ValueError(f"could not load image: {image_path}")    
     graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    
-    tag_info = scan_apriltag(image_path)
-    
-    corners = tag_info["corners"]
-    tl = corners["top_left"]
-    tr = corners["top_right"]
-    br = corners["bottom_right"]
-    bl = corners["bottom_left"]
-    
+
     fig, ax = plt.subplots()
     ax.imshow(graph_rgb)
     ax.axis('on')
     
-    for corner, color in zip([tl, tr, br, bl], ['red', 'green', 'blue', 'yellow']):
-        x, y = corner
-        ax.add_patch(plt.Circle((x, y), 10, color=color, fill=True))
-        print(f"Plotted corner at ({x}, {y}) with color {color}")
+    try: 
+        tag_info = scan_apriltag(image_path)
+        corners = tag_info["corners"]
+        tl = corners["top_left"]
+        tr = corners["top_right"]
+        br = corners["bottom_right"]
+        bl = corners["bottom_left"]
+        for corner, color in zip([tl, tr, br, bl], ['red', 'green', 'blue', 'yellow']):
+            x, y = corner
+            ax.add_patch(plt.Circle((x, y), 10, color=color, fill=True))
+    except Exception as e:
+        print(f"AprilTag detection failed: {e}")
     
+
     plant_info = find_plant(image_path)
-    
+
+    for coord in plant_info:
+        x1, y1, x2, y2 = plant_info
+        ax.add_patch(plt.Rectangle((x1, y1), x2 - x1, y2 - y1, edgecolor='cyan', facecolor='none', linewidth=2))
+
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
 
 def find_plant(image_path):
     model = YOLO("yolov8n.pt")
     results = model.predict(source=image_path, conf=0.25, save=False, save_txt=False)
-    for box in results[0].boxes:
-        x1, y1, x2, y2 = box.xyxy[0]
-        cls = int(box.cls[0])
-        conf = float(box.conf[0])
-        print(f"Detected class {cls} with confidence {conf:.2f} at [{x1}, {y1}, {x2}, {y2}]")
-        return {x1, y1, x2, y2}
-    return False
+    box = results[0].boxes[0]
+    x1, y1, x2, y2 = box.xyxy[0]
+    cls = int(box.cls[0])
+    conf = float(box.conf[0])
+    print(f"Detected class {cls} with confidence {conf:.2f} at [{x1}, {y1}, {x2}, {y2}]")
+    return {x1, y1, x2, y2}
     

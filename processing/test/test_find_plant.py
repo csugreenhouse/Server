@@ -10,14 +10,18 @@ ROOT = Path(__file__).resolve().parents[2]  # repo root (contains "Server")
 if str(ROOT) not in os.sys.path:
     os.sys.path.insert(0, str(ROOT))
 
+BASE_DIR = Path(__file__).resolve().parent
+IMG_DIR = BASE_DIR / "images" / "test_find_plant"
+
 def test_find_plant():
     mod = importlib.import_module("Server.processing.height")
     assert hasattr(mod, "find_plant"), "find_plant() not found"
-    img_path = Path(__file__).parent / "images" / "test_find_plant" / "image.png"
+    img_path = IMG_DIR / "image.png"
     assert img_path.exists(), f"Missing test image: {img_path}"
-    #mod.plot_image(img_path, "/tmp/test_find_plant_out.png")
+    out_path = IMG_DIR / "test_find_plant_out.png"
+    mod.plot_image(img_path, out_path)
     # Just check that it runs without error for now
-    mod.find_plant(str(img_path))   
+    #mod.find_plant(str(img_path))   
 '''
 def test_image1_height_between_1_and_2():
     """
