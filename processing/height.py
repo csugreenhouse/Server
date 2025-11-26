@@ -6,7 +6,6 @@ from pathlib import Path
 import warnings
 import psycopg2
 
-from future import annotations
 """ 
 SCANNERS AND GETTERS
 - Things that can easily be found and require no calculations. 
