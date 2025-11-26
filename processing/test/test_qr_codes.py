@@ -84,3 +84,20 @@ def test_qrtag_testNone(tmp_path=" "):
     
     with pytest.raises(ValueError):
         qr_list = mod.scan_qrtags(str(src))
+
+def test_qrtag_CHUCK_TEST(tmp_path=" "):
+    src = IMG_DIR / "CHUCK_TEST.jpg"
+    dst = IMG_DIR / "CHUCK_TEST_out.png"
+    
+    mod = importlib.import_module("Server.processing.height")
+    assert hasattr(mod, "scan_qrtags"), "scan_qrtags() not found"
+    
+    
+    qr_list = mod.scan_qrtags(str(src))
+    qr = qr_list[0]
+
+    assert qr["data"]=='Test01-C1v'
+    mod.plot_image(str(src), str(dst),qr_list=qr_list)
+
+
+    

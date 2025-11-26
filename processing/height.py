@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import warnings
 import psycopg2
+
+from future import annotations
 """ 
 SCANNERS AND GETTERS
 - Things that can easily be found and require no calculations. 
@@ -101,8 +103,25 @@ def get_heighest_green_pixel(image_path):
         raise ValueError(f"could not load image: {image_path}")
     
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    
+
+    #
+    """
+    below is an explanation on how to adjust the HSV values for green detection
+    depending on the lighting conditions and the specific shade of green
+    you might need to tweak these values to get optimal results
+    - lower_green and upper_green define the range of HSV values that correspond to green colors
+    - the current values are set to capture a broad range of green shades
+    - if the plant appears too dark or too light in the image, you might need to adjust these values
+    - for darker greens, you might want to lower the lower_green values
+    - for lighter greens, you might want to raise the upper_green values
+    - you can use an HSV color picker tool to find the right values for your specific images
+    """
+    """
     lower_green = (35, 100, 100)
+    upper_green = (85, 255, 255)
+    values could not pick up dark plants well
+    """
+    lower_green = (30, 75, 75)
     upper_green = (85, 255, 255)
     
     mask = cv2.inRange(hsv, lower_green, upper_green)
@@ -140,7 +159,7 @@ def fractional_height_between_lines(equation_top, equation_bottom, coordinate):
     if y_bottom - y_top == 0:
         raise ValueError("Top and bottom lines are the same - cannot compute fractional height")
     
-    fractional_height = (y - y_top) / (y_bottom - y_top)
+    fractional_height = 1 - (y - y_top) / (y_bottom - y_top)
     return fractional_height
 
 """
@@ -193,26 +212,6 @@ def plot_image(image_path, out_path, qr_list=None, april_list=None, heighest_gre
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
     
-"""
-DATABASE HELPERS 
-- functions to interact with the database   
-"""
-def generate_query(plant_height_m, plant_id):
-    query = f"INSERT INTO HEIGHT_LOG (specimen_id, HEIGHT_CM) VALUES (plant_id, height_cm) VALUES ({plant_id}, {plant_height_m/100});"
-    return query
-
-def execute_query(query):
-    conn = psycopg2.connect(
-        host="localhost",
-        dbname="greenhouse",
-        user="agmin",
-        password="Grow-Big"
-    )
-    cur = conn.cursor()
-    cur.execute("Select * from height_log;")
-    print(cur.fetchone)
-    cur.close()
-    conn.close()
 
 
 """
@@ -220,7 +219,7 @@ ESTIMATORS
 - functions that estimate height using the scanners and getters
 """
 
-def estimated_height(image_path, scale_units_m=.075):
+def estimated_height(image_path, scale_units_m=.075,bias_correction_m=0.0):
     # gets the heighest pixel on the image. Very simple function
     # is not very robust, so make sure no other green pixels are
     # in the image except the one on the plant
@@ -246,7 +245,7 @@ def estimated_height(image_path, scale_units_m=.075):
         heighest_green_pixel
     )
     
-    return scale_units_m * fractional_height
+    return scale_units_m * fractional_height + bias_correction_m
     
 """
 DOERS
@@ -260,3 +259,4 @@ def process_image_and_store_height(image_path, scale_units_m=.075):
     query = generate_query(plant_height_m, plant_id)
     execute_query(query)
     
+
