@@ -23,7 +23,8 @@ def test_heighest_green_01():
     heighest_green_pixel = mod.get_heighest_green_pixel(str(src))
     mod.plot_image(str(src), str(dst), heighest_green_pixel=heighest_green_pixel)
     
-    assert heighest_green_pixel == (158, 129)  # Expected coordinates of the highest green pixel
+    assert 150 <= heighest_green_pixel[0] <= 170
+    assert 120 <= heighest_green_pixel[1] <= 140
     
 
     

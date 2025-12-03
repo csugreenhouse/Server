@@ -5,7 +5,7 @@ DATABASE HELPERS
 - functions to interact with the database   
 """
 def generate_query(plant_height_m, plant_id):
-    query = f"INSERT INTO HEIGHT_LOG (specimen_id, HEIGHT_CM) VALUES (plant_id, height_cm) VALUES ({plant_id}, {plant_height_m/100});"
+    query = f"INSERT INTO HEIGHT_LOG (specimen_id, HEIGHT_CM) VALUES ({plant_id}, {plant_height_m});"
     return query
 
 def execute_query(query):
@@ -15,8 +15,12 @@ def execute_query(query):
         user="agmin",
         password="Grow-Big"
     )
-    cur = conn.cursor()
-    cur.execute("Select * from height_log;")
-    print(cur.fetchone)
-    cur.close()
-    conn.close()
+    try:
+        cur = conn.cursor()
+        cur.execute(query)
+        conn.commit()
+        cur.close()
+    except Exception as e:
+        print(f"Database error: {e}")
+    finally:
+        conn.close()    

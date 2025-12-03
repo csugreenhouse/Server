@@ -27,7 +27,7 @@ def scan_apriltags(image_path):
     valid_tags = []
 
     for tag in results:
-        print(f"TAG ID {tag.tag_id} with decision margin {tag.decision_margin}")
+        #print(f"TAG ID {tag.tag_id} with decision margin {tag.decision_margin}")
         if (tag.decision_margin>DECISION_MARGIN):
             valid_tags.append(
                 {
@@ -115,15 +115,16 @@ def get_heighest_green_pixel(image_path):
     - for lighter greens, you might want to raise the upper_green values
     - you can use an HSV color picker tool to find the right values for your specific images
     """
-    """
-    lower_green = (35, 100, 100)
+
+    lower_green = (35, 120, 60)
     upper_green = (85, 255, 255)
-    values could not pick up dark plants well
-    """
-    lower_green = (30, 75, 75)
-    upper_green = (85, 255, 255)
-    
+
     mask = cv2.inRange(hsv, lower_green, upper_green)
+
+    #display the mask for debugging purposes
+    #cv2.imshow("Green Mask", mask)
+    #cv2.waitKey(0)
+    cv2.destroyAllWindows()
     
     green_pixels = cv2.findNonZero(mask)
     
@@ -131,7 +132,9 @@ def get_heighest_green_pixel(image_path):
         raise ValueError("No green pixels found in the image")
     
     highest_pixel = min(green_pixels, key=lambda p: p[0][1])
-    
+    # prints the HSV color for debugging purposes
+    # make it so that the pixel is relativley close to other green pixels. If it is an outlier, ignore it in the height calculation
+
     return tuple(highest_pixel[0])
 
 """
@@ -186,7 +189,7 @@ def plot_image(image_path, out_path, qr_list=None, april_list=None, heighest_gre
             for corner, color in zip([tl, tr, br, bl], ['red', 'green', 'blue', 'yellow']):
                 x, y = corner
                 ax.add_patch(plt.Circle((x, y), 10, color=color, fill=True))
-                print(f"Plotted corner at ({x}, {y}) with color {color}")
+                #print(f"Plotted corner at ({x}, {y}) with color {color}")
             
     if april_list is not None:
         for april in april_list:
@@ -198,12 +201,12 @@ def plot_image(image_path, out_path, qr_list=None, april_list=None, heighest_gre
             for corner, color in zip([tl, tr, br, bl], ['red', 'green', 'blue', 'yellow']):
                 x, y = corner
                 ax.add_patch(plt.Circle((x, y), 10, color=color, fill=True))
-                print(f"Plotted corner at ({x}, {y}) with color {color}")
+                #print(f"Plotted corner at ({x}, {y}) with color {color}")
                 
     if heighest_green_pixel is not None:    
         x, y = heighest_green_pixel
         ax.add_patch(plt.Circle((x, y), 5, color='blue', fill=True))
-        print(f"Plotted heighest green pixel at ({x}, {y}) with color blue")
+        #print(f"Plotted heighest green pixel at ({x}, {y}) with color blue")
     
     if estimated_height is not None:
         ax.set_title(f"Estimated Height: {100*estimated_height:.2f} cm")
@@ -255,7 +258,4 @@ def process_image_and_store_height(image_path, scale_units_m=.075):
     qr_tag = scan_qrtags(image_path)[0]
     plant_id = qr_tag["data"]
     plant_height_m = estimated_height(image_path, scale_units_m)
-    query = generate_query(plant_height_m, plant_id)
-    execute_query(query)
-    
 
