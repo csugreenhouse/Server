@@ -103,19 +103,6 @@ def get_heighest_green_pixel(image_path):
     
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-    #
-    """
-    below is an explanation on how to adjust the HSV values for green detection
-    depending on the lighting conditions and the specific shade of green
-    you might need to tweak these values to get optimal results
-    - lower_green and upper_green define the range of HSV values that correspond to green colors
-    - the current values are set to capture a broad range of green shades
-    - if the plant appears too dark or too light in the image, you might need to adjust these values
-    - for darker greens, you might want to lower the lower_green values
-    - for lighter greens, you might want to raise the upper_green values
-    - you can use an HSV color picker tool to find the right values for your specific images
-    """
-
     lower_green = (35, 120, 60)
     upper_green = (85, 255, 255)
 
@@ -124,7 +111,7 @@ def get_heighest_green_pixel(image_path):
     #display the mask for debugging purposes
     #cv2.imshow("Green Mask", mask)
     #cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    #cv2.destroyAllWindows()
     
     green_pixels = cv2.findNonZero(mask)
     
@@ -221,15 +208,10 @@ ESTIMATORS
 - functions that estimate height using the scanners and getters
 """
 
-def estimated_height(image_path, scale_units_m=.075,bias_correction_m=0.0):
-    # gets the heighest pixel on the image. Very simple function
-    # is not very robust, so make sure no other green pixels are
-    # in the image except the one on the plant
+def estimated_height(image_path, auxilary_images=[], scale_units_m=.075,bias_correction_m=0.0):
     heighest_green_pixel = get_heighest_green_pixel(image_path)
-    # gets a list of all the april tags. For now, only the first one is used
     apriltag_info = scan_apriltags(image_path)[0]
     
-    # here I calculate the equation of the line passing through the top points of the april tag
     equation_top = get_equation_of_line(
         apriltag_info["corners"]["top_left"],
         apriltag_info["corners"]["top_right"]
@@ -248,14 +230,4 @@ def estimated_height(image_path, scale_units_m=.075,bias_correction_m=0.0):
     )
     
     return scale_units_m * fractional_height + bias_correction_m
-    
-"""
-DOERS
-- functions that do the full process from scanning to database insertion
-"""    
-
-def process_image_and_store_height(image_path, scale_units_m=.075):
-    qr_tag = scan_qrtags(image_path)[0]
-    plant_id = qr_tag["data"]
-    plant_height_m = estimated_height(image_path, scale_units_m)
 

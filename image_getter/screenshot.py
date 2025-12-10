@@ -30,7 +30,7 @@ def save_image(camera_num, url,image_dir):
 
 
 CAMERA_IPs = [
-    "192.168.0.11"
+    "192.168.0.56"
 ]
 
 def get_averages(iteration=5, delay_between_iterations_s=1):
@@ -59,6 +59,7 @@ def get_averages(iteration=5, delay_between_iterations_s=1):
 #print("WARNING")
 #print("MAKE SURE THAT THE CAMERA IS FACING THE PLAN PROPERLY")
 #print("MAKE SURE THAT THE CAMERA HAS THE CORRECT SETTINGS ON THE WEBSITE")
+'''
 while True:
     file_path = save_image(1,f"http://{CAMERA_IPs[0]}/capture","/srv/samba/plants/image/test")
     print("Processing image for QR tags and height estimation...")
@@ -72,6 +73,7 @@ while True:
         continue
     time.sleep(1)
 '''
+
 while True:
     file_path = save_image(1,f"http://{CAMERA_IPs[0]}/capture","/srv/samba/plants/image/test")
     print("Processing image for QR tags and height estimation...")
@@ -91,5 +93,4 @@ while True:
     db.execute_query(query)
     print("Height stored successfully.")
     time.sleep(30)  # wait for 5 minutes before taking another image
-'''
 
