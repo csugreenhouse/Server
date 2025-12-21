@@ -16,7 +16,8 @@ This repository holds the imaging software for the server.
 		- qr code information
 		- april tag information
 ### debug
-		Responsible for draw picture, which is used for a nice debug screen to see information like april tag location or mask of teh plant
+		Responsible for draw picture, which is used for a nice debug screen to see information like april 
+		tag location or mask of the plant
 ## database_interface
 		Will be how the user interacts with the database. Only used for simple queries for now
 		
