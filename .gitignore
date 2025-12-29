@@ -1,1 +1,18 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# pytest
+.pytest_cache/
+.cache
+
+# Coverage
+.coverage
+htmlcov/
+
+# Virtualenvs / env files
 venv/
+.venv/
+env/
+.env
