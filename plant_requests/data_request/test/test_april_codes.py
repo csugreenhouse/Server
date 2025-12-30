@@ -6,23 +6,26 @@ from pytest import approx
 import apriltag
 import array
 import cv2
-# Make sure Python can import "Server.processing.height" no matter the CWD
-ROOT = Path(__file__).resolve().parents[2]  # repo root (contains "Server")
+# Make sure Python can import modules from the repo root no matter the CWD
+ROOT = Path(__file__).resolve().parents[3]  # repo root (/srv/samba/Server)
 if str(ROOT) not in os.sys.path:
     os.sys.path.insert(0, str(ROOT))
 
 BASE_DIR = Path(__file__).resolve().parent
 IMG_DIR = BASE_DIR / "images" / "test_april_codes"
 
-mod = importlib.import_module("data_request.data_request")
-debug = importlib.import_module("debug.debug")
+mod = importlib.import_module("plant_requests.data_request.data_request")
+graph = importlib.import_module("plant_requests.utils.graph_util")
+
+def test_methods_existence():
+    assert hasattr(mod, "scan_apriltags"), "scan_apriltags() not found"
+    assert hasattr(mod, "scan_qrtags"), "scan_qrtags() not found"
+    assert hasattr(graph, "plot_image"), "plot_image() not found"
 
 def test_apritag_test01():
     src = IMG_DIR / "TEST01.jpg"
     dst = IMG_DIR / "TEST01_out.png"
     image = cv2.imread(str(src))
-    assert hasattr(mod, "scan_apriltags"), "scan_apriltags() not found"
-
     tag_info = mod.scan_apriltags(image)[0]
 
     tag_info["data"] == 1
@@ -44,9 +47,6 @@ def test_apritag_test02():
     
     image = cv2.imread(str(src))
     
-    assert hasattr(mod, "scan_apriltags"), "scan_apriltag() not found"
-    assert hasattr(debug, "plot_image"), "plot_image() not found"
-    
     tag_info = mod.scan_apriltags(image)[0]
     
     assert "corners" in tag_info, "scan_apriltags() returned no 'corners'"
@@ -65,11 +65,8 @@ def test_apritag_test03():
     src = IMG_DIR / "TEST03.jpg"
     dst = IMG_DIR / "TEST03_out.png"
     
-    assert hasattr(mod, "scan_apriltags"), "scan_apriltags() not found"
-    assert hasattr(debug, "plot_image"), "plot_image() not found"
-    
     image = cv2.imread(str(src))
-    debug.plot_image(image, dst)
+    graph.plot_image(image, dst)
     tag_info = mod.scan_apriltags(image)[0]
 
     assert "corners" in tag_info, "scan_apriltags() returned no 'corners'"
@@ -87,7 +84,6 @@ def test_apritag_test03():
 def test_apritag_testNONE():
     src = IMG_DIR / "TESTNONE.jpg"
     image = cv2.imread(str(src))
-    assert hasattr(mod, "scan_apriltags"), "scan_apriltags() not found"
     
     with pytest.raises(ValueError) as excinfo:
         tag_info = mod.scan_apriltags(image)

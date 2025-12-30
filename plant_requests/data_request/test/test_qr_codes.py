@@ -14,12 +14,13 @@ if str(ROOT) not in os.sys.path:
 BASE_DIR = Path(__file__).resolve().parent
 IMG_DIR = BASE_DIR / "images" / "test_qr_codes"
 
-mod = importlib.import_module("data_request.data_request")
-debug = importlib.import_module("debug.debug")
+mod = importlib.import_module("plant_requests.data_request.data_request")
+graph = importlib.import_module("plant_requests.utils.graph_util")
 
 def test_methods_existence():
     assert hasattr(mod, "scan_qrtags"), "scan_qrtags() not found"
-    assert hasattr(debug, "plot_image"), "plot_image() not found"
+    assert hasattr(graph, "plot_image"), "plot_image() not found"
+
 
 def test_qrtag_test01(tmp_path=" "):
     src = IMG_DIR / "TEST01.jpg"
@@ -28,7 +29,7 @@ def test_qrtag_test01(tmp_path=" "):
     image = cv2.imread(str(src))
     qr_list = mod.scan_qrtags(image)
     qr = qr_list[0]
-    debug.plot_image(image, dst,qr_list=qr_list)
+    graph.plot_image(image, dst,qr_list=qr_list)
     
     qr["data"] == 'Test01-C1v'
     assert "corners" in qr, "scan_qrtags() returned no 'corners'"
@@ -50,7 +51,7 @@ def test_qrtag_test02(tmp_path=" "):
     image = cv2.imread(str(src))
     qr_list = mod.scan_qrtags(image)
     qr = qr_list[0]
-    debug.plot_image(image, dst,qr_list=qr_list)
+    graph.plot_image(image, dst,qr_list=qr_list)
     
     assert "corners" in qr, "scan_qrtags() returned no 'corners'"
     corners = qr["corners"]
@@ -91,7 +92,7 @@ def test_qrtag_CHUCK_TEST(tmp_path=" "):
     qr = qr_list[0]
 
     assert qr["data"]=='Test01-C1v'
-    debug.plot_image(image, dst,qr_list=qr_list)
+    graph.plot_image(image, dst,qr_list=qr_list)
 
 
     

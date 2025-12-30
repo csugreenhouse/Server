@@ -3,12 +3,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import warnings
 
-def plot_image(image, out_path, qr_list=None, april_list=None, green_blob_list=None, heighest_green_pixel=None, estimated_height=None):
+def plot_image(image, out_path, reference_tag=None, qr_list=None, april_list=None, green_blob_list=None, heighest_green_pixel=None, estimated_height=None):
     graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     W,H = graph_rgb.shape[1], graph_rgb.shape[0]
     fig, ax = plt.subplots()
     ax.imshow(graph_rgb)
-    ax.axis('on')           
+    ax.axis('on')
+    if reference_tag is not None:
+        corners = reference_tag["corners"]
+        cx, cy = reference_tag["center"]
+        tl = corners["top_left"]
+        tr = corners["top_right"]
+        br = corners["bottom_right"]
+        bl = corners["bottom_left"]
+        ax.add_patch(plt.Circle((cx, cy), 10, color='red', fill=True))          
     if qr_list is not None:
         for qr in qr_list:
             corners = qr["corners"]
@@ -50,24 +58,26 @@ def plot_image(image, out_path, qr_list=None, april_list=None, green_blob_list=N
         ax.set_title(f"Estimated Height: {100*estimated_height:.2f} cm")
 
     #plot from a sideview, what the camera sees should look like a cone
+
+
     
             
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
 
-def plot_image_dimensions(image, out_path, reference):
+def plot_image_dimensions(image, out_path, reference_tag):
     fig, ax = plt.subplots()
     ax.imshow(image)
     ax.axis('on')
-    displacement = reference['displacements']['d']
-    displacement_z = reference['displacements']['z']
-    displacement_x = reference['displacements']['x']
-    displacement_y = reference['displacements']['y']
+    displacement = reference_tag['displacements']['d']
+    displacement_z = reference_tag['displacements']['z']
+    displacement_x = reference_tag['displacements']['x']
+    displacement_y = reference_tag['displacements']['y']
     #draw line between center of image and center of reference
     center_x_image = image.shape[1] / 2
     center_y_image = image.shape[0] / 2
-    center_x_ref = reference['center'][0]
-    center_y_ref = reference['center'][1]
+    center_x_ref = reference_tag['center'][0]
+    center_y_ref = reference_tag['center'][1]
     ax.plot([center_x_image, center_x_ref], [center_y_image, center_y_ref], color='red', linewidth=2)
     #add horizontal line and label for displacement_x on side of image
     ax.plot([center_x_image, center_x_ref], [center_y_ref, center_y_ref], color='green', linewidth=2)
