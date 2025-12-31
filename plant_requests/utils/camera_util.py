@@ -1,21 +1,9 @@
 import numpy as np
-
-camera_parameters = {
-    "focal_length_mm": 3.6,
-    "sensor_height_mm": 2.2684,
-    "sensor_width_mm": 3.590
-}
-
-card_dimensions_m = {
-    "width_m": 0.068,
-    "height_m": 0.068
-}
-
-def get_offsets(image, reference_tag):
+def get_offsets(image, camera_parameters, reference_tag):
     fx = (camera_parameters["focal_length_mm"] / camera_parameters["sensor_width_mm"]) * image.shape[1]
     fy = (camera_parameters["focal_length_mm"] / camera_parameters["sensor_height_mm"]) * image.shape[0]
-    width_card_m = card_dimensions_m["width_m"]
-    height_card_m = card_dimensions_m["height_m"]
+    width_card_m = reference_tag.get("scale_units_m", 0.065)
+    height_card_m = reference_tag.get("scale_units_m", 0.065)
     width_card_pixel_top = np.linalg.norm(np.array(reference_tag['corners']['top_right']) - np.array(reference_tag['corners']['top_left']))
     width_card_pixel_bottom = np.linalg.norm(np.array(reference_tag['corners']['bottom_right']) - np.array(reference_tag['corners']['bottom_left']))
     width_card_pixel = (width_card_pixel_top + width_card_pixel_bottom) / 2

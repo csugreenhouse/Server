@@ -7,7 +7,6 @@ import warnings
 import psycopg2
 import sys
 sys.path.append('/srv/samba/Server/plant_requests')
-from plant_requests.utils.graph_util import plot_image, plot_image_dimensions
 from data_request.data_request import scan_apriltags, scan_qrtags
 import numpy as np
 
@@ -38,14 +37,13 @@ def scan_green_blobs(image,
             })
     return plant_blob_list
 
-def get_heighest_green_pixel(image, color_bounds):
+def get_heighest_green_pixel(image, plant_blob_list):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    plant_mask_list = scan_green_blobs(image, color_bounds)
-    if len(plant_mask_list) == 0:
+    if len(plant_blob_list) == 0:
         raise ValueError("No plant detected in the image")
     heighest_pixel = None
     mask = np.zeros(hsv.shape[:2], dtype="uint8")
-    for plant in plant_mask_list:
+    for plant in plant_blob_list:
         mask = cv2.bitwise_and(mask, plant["mask"])
         ys, xs = np.where(plant["mask"] > 0)
         if len(ys) == 0:
@@ -87,28 +85,52 @@ def fractional_height_between_lines(equation_top, equation_bottom, coordinate):
 ESTIMATORS
 - functions that estimate height using the scanners and getters
 """
+def estimate_height(image, camera_id, reference_type="apriltag"):
+    camera_parameters = get_camera_parameters(camera_id)
+    estimated_height, debug = estimate_height(
+        image,
+        camera_parameters=camera_parameters,
+        camera_number=str(camera_id),
+        reference_type=reference_type
+    )
+    return estimated_height
 
-def estimate_height(image, reference_tag=None, tag_type="apriltag", color_bounds=((35, 120, 60), (85, 255, 255)), scale_units_m=0.070, bias_correction_m=0.0):
+
+def estimate_height(image, camera_parameters=None, camera_number="1",reference_tag=None, reference_type="apriltag", color_bounds=((35, 120, 60), (85, 255, 255)), scale_units_m=0.070, bias_correction_m=0.0):
+    qr_list = scan_qrtags(image)
+    april_list = scan_apriltags(image)
+    
     if reference_tag is None:
-        if tag_type == "apriltag":
+        if reference_type == "apriltag":
             reference_tag = scan_apriltags(image)[0]
-        elif tag_type == "qrtag":
+        elif reference_type == "qrtag":
             reference_tag = scan_qrtags(image)[0]
-        elif tag_type not in ["apriltag", "qrtag"]:
-            raise ValueError(f"Unknown tag_type: {tag_type}")
-    else:  
-        tag_info = reference_tag
-    heighest_green_pixel = get_heighest_green_pixel(image, color_bounds)
+        elif reference_type not in ["apriltag", "qrtag"]:
+            raise ValueError(f"Unknown reference_type: {reference_type}")
+    
+    if camera_parameters is None:
+        from data_request.data_request import get_camera_parameters
+        camera_parameters = get_camera_parameters(int(camera_number))
+        
+    if color_bounds is None:
+        color_bounds = reference_tag.get("color_bounds", ((35, 120, 60), (85, 255, 255)))
+    if scale_units_m is None:
+        scale_units_m = reference_tag.get("scale_units_m", 0.070)
+    if bias_correction_m is None:
+        bias_correction_m = reference_tag.get("bias_units_m", 0.0)
+
+    plant_blob_list = scan_green_blobs(image, color_bounds=color_bounds)
+    heighest_green_pixel = get_heighest_green_pixel(image, plant_blob_list)
 
     # here I calculate the equation of the line passing through the top points of the april tag
     equation_top = get_equation_of_line(
-        tag_info["corners"]["top_left"],
-        tag_info["corners"]["top_right"]
+        reference_tag["corners"]["top_left"],
+        reference_tag["corners"]["top_right"]
     )
     # here I calculate the equation of the line passing through the bottom points of the april tag
     equation_bottom = get_equation_of_line(
-        tag_info["corners"]["bottom_left"],
-        tag_info["corners"]["bottom_right"]
+        reference_tag["corners"]["bottom_left"],
+        reference_tag["corners"]["bottom_right"]
     )
     # to estimate the height, I find the fraction of the distance between the top and bottom lines
     # where the heighest green pixel is located. I then multiply this fraction by the known height of the april tag
@@ -117,5 +139,17 @@ def estimate_height(image, reference_tag=None, tag_type="apriltag", color_bounds
         equation_bottom,
         heighest_green_pixel
     )
+    
+    debug_info = {
+        "heighest_green_pixel": heighest_green_pixel,
+        "equation_top": equation_top,
+        "equation_bottom": equation_bottom,
+        "fractional_height": fractional_height,
+        "reference_tag": reference_tag,
+        "green_blob_list": plant_blob_list,
+        "qr_list": qr_list,
+        "april_list": april_list,
+        "camera_parameters": camera_parameters,
+    }
 
-    return scale_units_m * fractional_height + bias_correction_m
+    return scale_units_m * fractional_height + bias_correction_m, debug_info

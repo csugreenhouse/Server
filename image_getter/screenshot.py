@@ -26,24 +26,18 @@ def get_image(url):
     except requests.exceptions.RequestException as e:
         print(f"failed to get image: {e}")
         return None
+  
+# SET WHICH CAMERAS TO USE. THIS WILL EVENTUALLY COME FROM THE DATABASE  
+camera_ids = [1]
+Camera_IPs = [data.get_camera_ip(camera_id) for camera_id in camera_ids]
 
-Camera_IPs = [
-    "192.168.0.11"
-]
-
-plastic_bounds = (
-    (25, 60, 30),
-    (70, 255, 200)
-)
 
 image = get_image(f"http://{Camera_IPs[0]}/capture")
 
-debug_info = debug.estimate_height_debug(image, method="qrtag", color_bounds=plastic_bounds, scale_units_m=.065, bias_correction_b=-0.05)
+debug_info = debug.estimate_height_debug(image, camera_number=camera_ids[0], reference_type="apriltag")
+
 qr_list = debug_info['qr_list']
 qr_tag = debug_info['reference_tag']
 april_list = debug_info['april_list']
 
-dg.plot_image(image, out_path="/srv/samba/Server/image_getter/test_debug.png", reference_tag=qr_tag, qr_list=qr_list, april_list=april_list, 
-                heighest_green_pixel=debug_info['heighest_green_pixel'], 
-                green_blob_list=debug_info['green_blob_list'],
-                estimated_height=debug_info['estimated_height']/100)
+graph.plot_image_height(image, out_path="/srv/samba/Server/image_getter/test_debug.png", debug_info=debug_info)
