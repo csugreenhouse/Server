@@ -18,6 +18,15 @@ mod = importlib.import_module("plant_requests.data_request.data_request")
 graph = importlib.import_module("plant_requests.utils.graph_util")
 scanner = importlib.import_module("plant_requests.data_request.data_request")
 
+test_camera_parameters = {
+        "width": 1024,
+        "height": 768,
+        "focal_length_mm": 3.6,
+        "sensor_height_mm": 2.2684,
+        "sensor_width_mm": 3.590,
+        "ip_address": "192.168.0.11"
+    }
+
 def test_methods_existence():
     assert hasattr(mod, "scan_apriltags"), "scan_apriltags() not found"
     assert hasattr(mod, "scan_qrtags"), "scan_qrtags() not found"
@@ -28,7 +37,6 @@ def test_apritag_test01():
     dst = IMG_DIR / "TEST01_out.png"
     image = cv2.imread(str(src))
     tag_info = mod.scan_apriltags(image)[0]
-    graph.plot_image_tag_detection(image, dst, [tag_info])
 
     tag_info["data"] == 1
     assert "corners" in tag_info, "scan_apriltags() returned no 'corners'"
@@ -49,8 +57,7 @@ def test_apritag_test02():
     
     image = cv2.imread(str(src))
     tag_info = mod.scan_apriltags(image)[0]
-    graph.plot_image_tag_detection(image, dst, [tag_info])
-    
+
     assert "corners" in tag_info, "scan_apriltags() returned no 'corners'"
     corners = tag_info["corners"]
     tl = corners["top_left"]
@@ -69,7 +76,6 @@ def test_apritag_test03():
     
     image = cv2.imread(str(src))
     tag_info = mod.scan_apriltags(image)[0]
-    graph.plot_image_tag_detection(image, dst, [tag_info])
 
     assert "corners" in tag_info, "scan_apriltags() returned no 'corners'"
     corners = tag_info["corners"]

@@ -11,10 +11,11 @@ import numpy as np
 
 import plant_requests.utils.debug_util as debug
 import plant_requests.utils.graph_util as dg
-import plant_requests.height_request.height_estimator as hr
+import plant_requests.height_request.height_request as hr
 import plant_requests.area_request as ar
 import database_interface.database_interface as db
 import plant_requests.data_request.data_request as data
+import plant_requests.utils.graph_util as graph
 
 
 def get_image(url):
@@ -29,15 +30,12 @@ def get_image(url):
   
 # SET WHICH CAMERAS TO USE. THIS WILL EVENTUALLY COME FROM THE DATABASE  
 camera_ids = [1]
-Camera_IPs = [data.get_camera_ip(camera_id) for camera_id in camera_ids]
+camera_IPs = [data.get_camera_ip(camera_id) for camera_id in camera_ids]
 
+#get the image from the first camera
+image = get_image(f"http://{camera_IPs[0]}/capture")
+# estimate the height. The debug info is used to make a debug graph.
+height_estimate, debug_info = hr.height_request(camera_id=camera_ids[0], reference_type="apriltag")
 
-image = get_image(f"http://{Camera_IPs[0]}/capture")
-
-debug_info = debug.estimate_height_debug(image, camera_number=camera_ids[0], reference_type="apriltag")
-
-qr_list = debug_info['qr_list']
-qr_tag = debug_info['reference_tag']
-april_list = debug_info['april_list']
-
+# debug graph of the height estimation
 graph.plot_image_height(image, out_path="/srv/samba/Server/image_getter/test_debug.png", debug_info=debug_info)

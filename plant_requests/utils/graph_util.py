@@ -38,21 +38,26 @@ def plot_camera_view_frustum(ax, heighest_green_pixel,camera_parameters, referen
 
     
 def plot_tag(ax, tag, color='red', center_size=5):
-    corners = tag["corners"]
-    tl = corners["top_left"]
-    tr = corners["top_right"]
-    br = corners["bottom_right"]
-    bl = corners["bottom_left"]
+    try:
+        corners = tag["corners"]
+        tl = corners["top_left"]
+        tr = corners["top_right"]
+        br = corners["bottom_right"]
+        bl = corners["bottom_left"]
+    except KeyError:
+        warnings.warn("Tag corners not found, cannot plot tag.")
+        return
     ax.add_patch(plt.Polygon([tl, tr, br, bl], fill=None, edgecolor=color, linewidth=2))
     cx, cy = tag["center"]
     ax.add_patch(plt.Circle((cx, cy), center_size, color=color, fill=True))
 
-def plot_mask(ax, mask, color='lime'):
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    for contour in contours:
-        contour = contour.squeeze()
-        ax.plot(contour[:, 0], contour[:, 1], color=color, linewidth=2)
-        
+def plot_green_blobs(ax, blobs, color='lime'):
+    for blob in blobs:
+        contours, _ = cv2.findContours(blob["mask"], cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        for contour in contours:
+            contour = contour.squeeze()
+            ax.plot(contour[:, 0], contour[:, 1], color=color, linewidth=2)
+    
 def plot_point(ax, point, color='blue', size=5):
     x, y = point
     ax.add_patch(plt.Circle((x, y), size, color=color, fill=True))
@@ -90,53 +95,83 @@ def plot_image_tag_detection(image, out_path, tag_list, reference_tag=None):
     ax.axis('on')
     for tag in tag_list:
         plot_tag(ax, tag, color='red', center_size=10)
+        plot_tag_offsets(W, H, ax, tag)
     
     # make it so that the graph is forced to be the size of the image
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
 
+def plot_line(ax, equation, color='yellow', linestyle='--', label=None):
+    slope, intercept = equation
+    x_vals = np.array(ax.get_xlim())
+    if slope == float('inf'):
+        x_line = np.full_like(x_vals, intercept)
+        y_line = np.array(ax.get_ylim())
+    else:
+        y_vals = slope * x_vals + intercept
+        x_line = x_vals
+        y_line = y_vals
+    ax.plot(x_line, y_line, color=color, linestyle=linestyle, label=label)
 
 def plot_image_height(image, out_path, debug_info):
-    reference_tag = debug_info["reference_tag"]
-    green_blob_list = debug_info["green_blob_list"]
-    heighest_green_pixel = debug_info.get("heighest_green_pixel", None)
-    qr_list = debug_info.get("qr_list", None)
-    april_list = debug_info.get("april_list", None)
-    estimated_height = debug_info.get("estimated_height", None)
-    camera_parameters = debug_info.get("camera_parameters", None)
+    # unpack debug info. If there is anything missing, raise an error
+    try:
+        # From debug info
+        estimated_height = debug_info["estimated_height"]
+        heighest_green_pixel = debug_info["heighest_green_pixel"]
+        equation_top = debug_info["equation_top"]
+        equation_bottom = debug_info["equation_bottom"]
+        fractional_height = debug_info["fractional_height"]
+        reference_tag = debug_info["reference_tag"]
+        green_blob_list = debug_info["green_blob_list"]
+        # From reference tag, included in debug info
+        reference_tag_id = reference_tag["data"]
+        scale_units_m = reference_tag["scale_units_m"]
+        bias_units_m = reference_tag["bias_units_m"]
+        color_bounds = reference_tag["color_bounds"]
+        
+    except KeyError as e:
+        raise KeyError(f"Missing key in debug_info: {e}")
+    
+    # Initialize the graph
     graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     W,H = graph_rgb.shape[1], graph_rgb.shape[0]
     fig, ax = plt.subplots()
     ax.imshow(graph_rgb)
     ax.axis('on')
+    
+    # initialize title string
+    title_string = ""
+    title_string += f"Estimated Height: {100*estimated_height:.2f} cm \n"
+    title_string += f"Fractional Height: {fractional_height} cm \n"
+    title_string += f"Reference Tag ID: {reference_tag_id} \n"
+    title_string += f"Reference Tag Scale: {scale_units_m*100:.2f} cm \n"
+    title_string += f"Bias Correction: {bias_units_m*100:.2f} cm \n"
+    title_string += f"Color Bounds: {color_bounds[0]},{color_bounds[1]} \n"
+    title_string += f"Plant_ID: ** \n"
+    ax.set_title(title_string)
+    ax.title.set_ha('left')
+    ax.title.set_position([0.05, 0.95])
 
+    # plot the reference tag
     plot_tag(ax, reference_tag, color='red', center_size=10)
 
-    for qr_tag in qr_list:
-        plot_tag(ax, qr_tag, color='cyan', center_size=5)
-    
-    for april_tag in april_list:
-        plot_tag(ax, april_tag, color='magenta', center_size=5)
-        
-    for plant_blob in green_blob_list:
-        mask = plant_blob["mask"]
-        plot_mask(ax, mask, color='lime')
+    # plot lines
+    plot_line(ax, equation_top, color='red', linestyle='--', label='Top Line of Reference Tag')
+    plot_line(ax, equation_bottom, color='red', linestyle='--', label='Bottom Line of Reference Tag')
 
-    if heighest_green_pixel is not None:
-        plot_point(ax, heighest_green_pixel, color='blue', size=7)
+    # plot the heighest green pixel
+    plot_point(ax, heighest_green_pixel, color='green', size=10)
 
-    if estimated_height is not None:
-        ax.set_title(f"Estimated Height: {100*estimated_height:.2f} cm")
-        
-    plot_tag_offsets(W,H, ax, reference_tag)
+    #plot the green blobs
+    plot_green_blobs(ax, green_blob_list, color='lime')
 
-    if camera_parameters and heighest_green_pixel is not None:
-        plot_camera_view_frustum(ax, heighest_green_pixel, camera_parameters, reference_tag, color='yellow')
-    
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol=2)
-    
+    # add legend
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
-    
+
+
+
 
     

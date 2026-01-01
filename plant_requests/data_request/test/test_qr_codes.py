@@ -29,7 +29,6 @@ def test_qrtag_test01(tmp_path=" "):
     image = cv2.imread(str(src))
     qr_list = mod.scan_qrtags(image)
     qr = qr_list[0]
-    graph.plot_image_tag_detection(image, dst, qr_list)
 
     qr["data"] == 'Test01-C1v'
     assert "corners" in qr, "scan_qrtags() returned no 'corners'"
@@ -51,7 +50,6 @@ def test_qrtag_test02(tmp_path=" "):
     image = cv2.imread(str(src))
     qr_list = mod.scan_qrtags(image)
     qr = qr_list[0]
-    graph.plot_image_tag_detection(image, dst, qr_list)
     
     assert "corners" in qr, "scan_qrtags() returned no 'corners'"
     corners = qr["corners"]
@@ -92,6 +90,5 @@ def test_qrtag_CHUCK_TEST(tmp_path=" "):
     qr = qr_list[0]
 
     assert qr["data"]=='Test01-C1v'
-    graph.plot_image_tag_detection(image, dst, qr_list)
 
     
