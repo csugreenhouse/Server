@@ -20,6 +20,7 @@ plastic_color_bounds = ((30, 60, 30),(70, 255, 200))
 lettuce_color_bounds = ((30, 35, 30),(75, 255, 255))
 
 test_camera_parameters = {
+    "camera_id": 1,
     "width": 1024,
     "height": 768,
     "focal_length_mm": 3.6,
@@ -36,8 +37,8 @@ def test_methods_existence():
     assert hasattr(graph_util, "plot_estimate_height_graph_info"), "plot_estimate_height_graph_info() not found"
 
 def test_estimate_height_6CM():
-    src = IMG_DIR / "TEST_6CM.jpg"
-    dst = IMG_DIR / "TEST_6CM_out.png"
+    src = IMG_DIR / "test_6cm.jpg"
+    dst = IMG_DIR / "test_6cm_out.png"
     image = cv2.imread(str(src))
 
     april_tag = scanner_util.scan_apriltags(image)[0]
@@ -54,8 +55,8 @@ def test_estimate_height_6CM():
     assert estimated_height == pytest.approx(.06, rel=.20)
     
 def test_estimate_height_10CM():
-    src = IMG_DIR / "TEST_10CM.jpg"
-    dst = IMG_DIR / "TEST_10CM_out.png"
+    src = IMG_DIR / "test_10cm.jpg"
+    dst = IMG_DIR / "test_10cm_out.png"
     image = cv2.imread(str(src))
 
     april_tag = scanner_util.scan_apriltags(image)[0]
@@ -72,8 +73,8 @@ def test_estimate_height_10CM():
     assert estimated_height == pytest.approx(.10, rel=.20)
 
 def test_estimate_height_16CM():
-    src = IMG_DIR / "TEST_16CM.jpg"
-    dst = IMG_DIR / "TEST_16CM_out.png"
+    src = IMG_DIR / "test_16cm.jpg"
+    dst = IMG_DIR / "test_16cm_out.png"
     image = cv2.imread(str(src))
 
     april_tag = scanner_util.scan_apriltags(image)[0]

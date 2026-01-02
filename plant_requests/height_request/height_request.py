@@ -40,8 +40,9 @@ def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1)):
             heighest_pixel = (int(xs[heighest_index]), int(ys[heighest_index]))
             
     graph_info = {
-        "heighest_pixel": heighest_pixel,
-        "green_blob_list": plant_blob_list
+        "heighest_green_pixel": heighest_pixel,
+        "green_blob_list": plant_blob_list,
+        "plant_bounds": plant_bounds
     }
     return heighest_pixel, graph_info
 

@@ -66,7 +66,6 @@ def plot_estimate_height_graph_info(image, out_path, graph_info):
     plt.close(fig)
 
 def add_estimate_height_graph_info(ax, W, H,graph_info, color='cyan'):
-    
     try :
         estimated_height = graph_info["estimated_height"]
         heighest_green_pixel = graph_info["heighest_green_pixel"]
@@ -98,11 +97,29 @@ def add_estimate_height_graph_info(ax, W, H,graph_info, color='cyan'):
     
     
 def plot_heighest_green_pixel_graph_info(image, out_path, graph_info):
-    pass
+    # Initialize the graph
+    graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    W,H = graph_rgb.shape[1], graph_rgb.shape[0]
+    fig, ax = plt.subplots()
+    ax.imshow(graph_rgb)
+    ax.axis('on')
 
-def plot_tag_detection(image, out_path, tag_list):
-    pass
+    # initialize title string
+    heighest_green_pixel = graph_info["heighest_green_pixel"]
+    green_blob_list = graph_info["green_blob_list"]
+    
+    title_string = ""
+    title_string += f"Heighest Green Pixel: {heighest_green_pixel} \n"
+    ax.set_title(title_string)
+    ax.title.set_ha('left')
+    ax.title.set_position([0.05, 0.95])
 
+    add_point(ax, heighest_green_pixel, color='green', size=10)
+    add_green_blobs(ax, green_blob_list, color='lime')
+    
+    plt.savefig(str(out_path), bbox_inches="tight")
+    plt.close(fig)
+        
 def add_tag_displacement_relative_to_camera(ax, W, H, reference_tag):
     displacement_d = reference_tag['displacements']['d']
     displacement_z = reference_tag['displacements']['z']
