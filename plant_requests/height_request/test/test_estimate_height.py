@@ -12,9 +12,9 @@ if str(ROOT) not in os.sys.path:
 BASE_DIR = Path(__file__).resolve().parent
 IMG_DIR = BASE_DIR / "images" / "test_estimate_height"
 
-hr = importlib.import_module("height_request.height_request")
-dr = importlib.import_module("data_request.data_request")
-gr = importlib.import_module("utils.graph_util")
+hr = importlib.import_module("plant_requests.height_request.height_request")
+scanner_util = importlib.import_module("plant_requests.utils.scanner_util")
+graph_util = importlib.import_module("plant_requests.utils.graph_util")
 
 plastic_color_bounds = ((30, 60, 30),(70, 255, 200))
 lettuce_color_bounds = ((30, 35, 30),(75, 255, 255))
@@ -31,24 +31,25 @@ test_camera_parameters = {
 
 def test_methods_existence():
     assert hasattr(hr, "estimate_height"), "estimate_height() not found"
-    assert hasattr(dr, "scan_apriltags"), "scan_apriltags() not found"
-    assert hasattr(dr, "get_first_april_tag_info"), "get_first_april_tag_info() not found"
-    
+    assert hasattr(scanner_util, "scan_apriltags"), "scan_apriltags() not found"
+    assert hasattr(scanner_util, "get_first_april_tag_info"), "get_first_april_tag_info() not found"
+    assert hasattr(graph_util, "plot_estimate_height_graph_info"), "plot_estimate_height_graph_info() not found"
 
 def test_estimate_height_6CM():
     src = IMG_DIR / "TEST_6CM.jpg"
     dst = IMG_DIR / "TEST_6CM_out.png"
     image = cv2.imread(str(src))
 
-    april_tag = dr.scan_apriltags(image)[0]
+    april_tag = scanner_util.scan_apriltags(image)[0]
     reference_tag = april_tag
     reference_tag["scale_units_m"] = .07
     reference_tag["color_bounds"] = plastic_color_bounds
     reference_tag["bias_units_m"] = .01
+    reference_tag["plant_bounds"] = (.35, .6)
 
     estimated_height, debug_info = hr.estimate_height(image, april_tag)
 
-    gr.plot_image_height(image, dst, debug_info)
+    graph_util.plot_estimate_height_graph_info(image, dst, debug_info)
 
     assert estimated_height == pytest.approx(.06, rel=.20)
     
@@ -56,16 +57,17 @@ def test_estimate_height_10CM():
     src = IMG_DIR / "TEST_10CM.jpg"
     dst = IMG_DIR / "TEST_10CM_out.png"
     image = cv2.imread(str(src))
-    
-    april_tag = dr.scan_apriltags(image)[0]
+
+    april_tag = scanner_util.scan_apriltags(image)[0]
     reference_tag = april_tag
     reference_tag["scale_units_m"] = .065
     reference_tag["color_bounds"] = plastic_color_bounds
     reference_tag["bias_units_m"] = .01
+    reference_tag["plant_bounds"] = (.30, .65)
 
     estimated_height, debug_info = hr.estimate_height(image, april_tag)
 
-    gr.plot_image_height(image, dst, debug_info)
+    graph_util.plot_estimate_height_graph_info(image, dst, debug_info)
     
     assert estimated_height == pytest.approx(.10, rel=.20)
 
@@ -73,16 +75,17 @@ def test_estimate_height_16CM():
     src = IMG_DIR / "TEST_16CM.jpg"
     dst = IMG_DIR / "TEST_16CM_out.png"
     image = cv2.imread(str(src))
-    
-    april_tag = dr.scan_apriltags(image)[0]
+
+    april_tag = scanner_util.scan_apriltags(image)[0]
     reference_tag = april_tag
     reference_tag["scale_units_m"] = .065
     reference_tag["color_bounds"] = plastic_color_bounds
     reference_tag["bias_units_m"] = .01
+    reference_tag["plant_bounds"] = (.3, .65)
 
     estimated_height, debug_info = hr.estimate_height(image, april_tag)
 
-    gr.plot_image_height(image, dst, debug_info)
+    graph_util.plot_estimate_height_graph_info(image, dst, debug_info)
     assert estimated_height == pytest.approx(.16, rel=.20)
 
 

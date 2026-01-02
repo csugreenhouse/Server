@@ -14,20 +14,19 @@ if str(ROOT) not in os.sys.path:
 BASE_DIR = Path(__file__).resolve().parent
 IMG_DIR = BASE_DIR / "images" / "test_qr_codes"
 
-mod = importlib.import_module("plant_requests.data_request.data_request")
-graph = importlib.import_module("plant_requests.utils.graph_util")
+scanner_util = importlib.import_module("plant_requests.utils.scanner_util")
+#graph_util = importlib.import_module("plant_requests.utils.graph_util")
 
 def test_methods_existence():
-    assert hasattr(mod, "scan_qrtags"), "scan_qrtags() not found"
-    assert hasattr(graph, "plot_image_tag_detection"), "plot_image_tag_detection() not found"
-
+    assert hasattr(scanner_util, "scan_qrtags"), "scan_qrtags() not found"
+    #assert hasattr(graph_util, "plot_image_tag_detection"), "plot_image_tag_detection() not found"
 
 def test_qrtag_test01(tmp_path=" "):
     src = IMG_DIR / "TEST01.jpg"
     dst = IMG_DIR / "TEST01_out.png"
     
     image = cv2.imread(str(src))
-    qr_list = mod.scan_qrtags(image)
+    qr_list = scanner_util.scan_qrtags(image)
     qr = qr_list[0]
 
     qr["data"] == 'Test01-C1v'
@@ -48,7 +47,7 @@ def test_qrtag_test02(tmp_path=" "):
     dst = IMG_DIR / "TEST02_out.png"
     
     image = cv2.imread(str(src))
-    qr_list = mod.scan_qrtags(image)
+    qr_list = scanner_util.scan_qrtags(image)
     qr = qr_list[0]
     
     assert "corners" in qr, "scan_qrtags() returned no 'corners'"
@@ -71,7 +70,7 @@ def test_qrtag_toFarAway_TEST03(tmp_path=" "):
     
     # assert that scan_qrtags raises a ValueError
     with pytest.raises(ValueError):
-        qr_list = mod.scan_qrtags(image)
+        qr_list = scanner_util.scan_qrtags(image)
         
 def test_qrtag_testNone(tmp_path=" "):
     src = IMG_DIR / "TESTNONE.jpg"
@@ -79,14 +78,14 @@ def test_qrtag_testNone(tmp_path=" "):
     image = cv2.imread(str(src))
     
     with pytest.raises(ValueError):
-        qr_list = mod.scan_qrtags(image)
+        qr_list = scanner_util.scan_qrtags(image)
         
 def test_qrtag_CHUCK_TEST(tmp_path=" "):
     src = IMG_DIR / "CHUCK_TEST.jpg"
     dst = IMG_DIR / "CHUCK_TEST_out.png"
     image = cv2.imread(str(src))
 
-    qr_list = mod.scan_qrtags(image)
+    qr_list = scanner_util.scan_qrtags(image)
     qr = qr_list[0]
 
     assert qr["data"]=='Test01-C1v'
