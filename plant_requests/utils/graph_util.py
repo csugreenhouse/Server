@@ -6,7 +6,7 @@ import numpy as np
 from plant_requests.utils.line_util import get_equation_of_line, get_vertical_line, fractional_height_between_lines, get_intercept_of_lines
 
 def plot_height_request_graph_info(image, out_path, graph_info):
-    estimed_heights = graph_info["estimed_heights"]
+    estimed_heights = graph_info["estimated_heights"]
     estimated_heights_info = graph_info["estimated_heights_info"]
     camera_parameters = graph_info["camera_parameters"]
     
@@ -20,11 +20,11 @@ def plot_height_request_graph_info(image, out_path, graph_info):
     title_string = ""
     color_pallet = ['cyan', 'yellow', 'magenta', 'orange', 'pink', 'lime', 'aqua']
     
-    for i, estimated_height, estimated_height_info in zip(estimed_heights, estimated_heights_info):
-        title_string += f"Estimated Height for tag {estimated_height_info['tag_id']}: {100*estimated_height:.2f} cm \n"
+    for i, (estimated_height, estimated_height_info) in enumerate(zip(estimed_heights, estimated_heights_info)):
+        title_string += f"Estimated Height for tag {estimated_height_info['reference_tag']['data']}: {100*estimated_height:.2f} cm \n"
         color = color_pallet[i % len(color_pallet)]
-        add_estimate_height_graph_info(ax, W, H, graph_info, color=color)
-        add_tag_displacement_relative_to_camera(ax, W, H, estimated_height_info["reference_tag"], color=color)
+        add_estimate_height_graph_info(ax, W, H, estimated_height_info, color=color)
+        #add_tag_displacement_relative_to_camera(ax, W, H, estimated_height_info["reference_tag"], color=color)
         add_camera_view_frustum(ax, estimated_height_info["heighest_green_pixel"], camera_parameters, estimated_height_info["reference_tag"], color=color)
     
     ax.set_title(title_string)
@@ -60,6 +60,22 @@ def plot_estimate_height_graph_info(image, out_path, graph_info):
     ax.title.set_position([0.05, 0.95])
 
     add_estimate_height_graph_info(ax, W, H, graph_info)
+    
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
+    plt.savefig(str(out_path), bbox_inches="tight")
+    plt.close(fig)
+    
+def plot_calculated_displacements_graph_info(image, out_path, reference_tag):
+    # Initialize the graph
+    graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    W,H = graph_rgb.shape[1], graph_rgb.shape[0]
+    fig, ax = plt.subplots()
+    ax.imshow(graph_rgb)
+    ax.axis('on')
+    
+    # initialize title string
+
+    add_tag_displacement_relative_to_camera(ax, W, H, reference_tag)
     
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
     plt.savefig(str(out_path), bbox_inches="tight")
@@ -120,7 +136,12 @@ def plot_heighest_green_pixel_graph_info(image, out_path, graph_info):
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
         
-def add_tag_displacement_relative_to_camera(ax, W, H, reference_tag):
+def add_tag_displacement_relative_to_camera(ax, W, H, reference_tag, color=None):
+    if color is None:
+        color = ['red', 'green', 'blue']
+    else:
+        color = [color]*3
+        
     displacement_d = reference_tag['displacements']['d']
     displacement_z = reference_tag['displacements']['z']
     displacement_x = reference_tag['displacements']['x']
@@ -129,14 +150,14 @@ def add_tag_displacement_relative_to_camera(ax, W, H, reference_tag):
     center_y_image = H / 2
     center_x_ref = reference_tag['center'][0]
     center_y_ref = reference_tag['center'][1]
-    
-    ax.plot([center_x_image, center_x_ref], [center_y_image, center_y_ref], color='red', linewidth=2)
-    ax.plot([center_x_image, center_x_ref], [center_y_ref, center_y_ref], color='green', linewidth=2)
-    ax.plot([center_x_ref, center_x_ref], [center_y_image, center_y_ref], color='blue', linewidth=2)
-    
-    ax.plot([], [], color='red', label='Depth Displacement(z)\n %.6f cm' % (displacement_z*100))
-    ax.plot([], [], color='green', label='Horizontal Displacement (x)\n %.6f cm' % (displacement_x*100))
-    ax.plot([], [], color='blue', label='Vertical Displacement (y)\n %.6f cm' % (displacement_y*100))
+
+    ax.plot([center_x_image, center_x_ref], [center_y_image, center_y_ref], color=color[0], linewidth=2)
+    ax.plot([center_x_image, center_x_ref], [center_y_ref, center_y_ref], color=color[1], linewidth=2)
+    ax.plot([center_x_ref, center_x_ref], [center_y_image, center_y_ref], color=color[2], linewidth=2)
+
+    ax.plot([], [], color=color[0], label='Depth Displacement(z)\n %.6f cm' % (displacement_z*100))
+    ax.plot([], [], color=color[1], label='Horizontal Displacement (x)\n %.6f cm' % (displacement_x*100))
+    ax.plot([], [], color=color[2], label='Vertical Displacement (y)\n %.6f cm' % (displacement_y*100))
     ax.plot([], [], color='black', label='Distance to QR Code (d)\n %.6f cm' % (displacement_d*100))
 
 def add_camera_view_frustum(ax, heighest_green_pixel,camera_parameters, reference_tag, color='yellow'):
@@ -187,7 +208,8 @@ def add_point(ax, point, color='blue', size=5):
     x, y = point
     ax.add_patch(plt.Circle((x, y), size, color=color, fill=True))
 
-def add_tag_offsets(W,H, ax, reference_tag, color='red'):
+'''
+def add_tag_offsets(W,H, ax, reference_tag, color='cyan'):
     displacement_d = reference_tag['displacements']['d']
     displacement_z = reference_tag['displacements']['z']
     displacement_x = reference_tag['displacements']['x']
@@ -197,15 +219,15 @@ def add_tag_offsets(W,H, ax, reference_tag, color='red'):
     center_x_ref = reference_tag['center'][0]
     center_y_ref = reference_tag['center'][1]
 
-    ax.plot([center_x_image, center_x_ref], [center_y_image, center_y_ref], color='red', linewidth=2)
-    ax.plot([center_x_image, center_x_ref], [center_y_ref, center_y_ref], color='green', linewidth=2)
-    ax.plot([center_x_ref, center_x_ref], [center_y_image, center_y_ref], color='blue', linewidth=2)
+    ax.plot([center_x_image, center_x_ref], [center_y_image, center_y_ref], color=color, linewidth=2)
+    ax.plot([center_x_image, center_x_ref], [center_y_ref, center_y_ref], color=color, linewidth=2)
+    ax.plot([center_x_ref, center_x_ref], [center_y_image, center_y_ref], color=color, linewidth=2)
 
     ax.plot([], [], color='red', label='Depth Displacement(z)\n %.6f cm' % (displacement_z*100))
     ax.plot([], [], color='green', label='Horizontal Displacement (x)\n %.6f cm' % (displacement_x*100))
     ax.plot([], [], color='blue', label='Vertical Displacement (y)\n %.6f cm' % (displacement_y*100))
     ax.plot([], [], color='black', label='Distance to QR Code (d)\n %.6f cm' % (displacement_d*100))
-
+'''
 def add_line(ax, equation, color='yellow', linestyle='--', label=None):
     slope, intercept = equation
     x_vals = np.array(ax.get_xlim())

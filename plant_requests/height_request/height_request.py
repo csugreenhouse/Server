@@ -46,42 +46,32 @@ def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1)):
     }
     return heighest_pixel, graph_info
 
-def height_request(camera_id, reference_type="apriltag"):
-    camera_parameters = info_getter_util.qeury_camera_parameters(camera_id)
-    image = image_getter_util.get_image_from_camera_parameters(camera_parameters)
+def height_request(image, reference_tags, camera_parameters):
     
-    if reference_type not in ["apriltag", "qrtag"]:
-        raise ValueError(f"Unknown reference_type: {reference_type}")
     if image is None:
         raise ValueError("Input image is None")
-    if camera_id is None:
-        raise ValueError("camera_id must be provided")
-    
-    camera_parameters = info_getter_util.get_camera_parameters(camera_id)
-    
+    if camera_parameters is None:
+        raise ValueError("camera_parameters must be provided")
+    if len(reference_tags) is 0:
+        raise ValueError("No reference tags were provided")
+
     apriltag_information_list = scanner_util.scan_apriltags(image)
     qrtag_information_list = scanner_util.scan_qrtags(image)
     
-    reference_tags = info_getter_util.make_reference_tags(camera_parameters, apriltag_information_list)
-    
-    estimated_heights, estimated_heights_info = estimate_heights(image, reference_tags)
+    estimated_heights, estimated_heights_info = estimate_multiple_heights(image, reference_tags)
 
-    for reference_tag in reference_tags:
-        estimated_height, estimate_height_graph_info = estimate_height(image, reference_tag)
-        estimated_heights.append(estimated_height)
-        estimated_heights_info.append(estimate_height_graph_info)
 
     graph_info = {
-        "estimed_heights": [res[0] for res in result],
-        "estimated_heights_info": [res[1] for res in result],
+        "estimated_heights": estimated_heights,
+        "estimated_heights_info": estimated_heights_info,
         "qr_list": qrtag_information_list,
         "april_list": apriltag_information_list,
         "camera_parameters": camera_parameters,
     }
 
-    return estimated_heights, estimated_heights_info
+    return estimated_heights, graph_info
 
-def estimate_heights(image, reference_tags):
+def estimate_multiple_heights(image, reference_tags):
     estimated_heights = []
     estimated_heights_info = []
     for reference_tag in reference_tags:

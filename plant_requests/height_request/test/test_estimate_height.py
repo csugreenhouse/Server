@@ -16,7 +16,7 @@ hr = importlib.import_module("plant_requests.height_request.height_request")
 scanner_util = importlib.import_module("plant_requests.utils.scanner_util")
 graph_util = importlib.import_module("plant_requests.utils.graph_util")
 
-plastic_color_bounds = ((30, 60, 30),(70, 255, 200))
+plastic_color_bounds = ((30, 10, 30),(70, 255, 200))
 lettuce_color_bounds = ((30, 35, 30),(75, 255, 255))
 
 test_camera_parameters = {
@@ -28,6 +28,7 @@ test_camera_parameters = {
     "sensor_width_mm": 3.590,
     "ip_address": "192.168.0.11"
     }
+
 
 
 def test_methods_existence():

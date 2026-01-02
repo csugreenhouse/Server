@@ -31,7 +31,7 @@ def test_methods_existence():
     assert hasattr(scanner_util, "scan_apriltags"), "scan_apriltags() not found"
     #assert hasattr(graph_util, "plot_calculated_displacements_graph_info"), "plot_calculated_displacements_graph_info() not found"
     
-def test_calculate_displacement():
+def test_calculate_displacement_01():
     src = IMG_DIR / "test_01.jpg"
     dst = IMG_DIR / "test_01_out.png"
 
@@ -40,10 +40,75 @@ def test_calculate_displacement():
     assert image is not None, "Failed to read test image"
     
     april_tag_list = scanner_util.scan_apriltags(image)
-    
-    displacements = calculated_displacements_util.calculate_displacement(
+    april_tag = april_tag_list[0]
+    reference_tag = calculated_displacements_util.add_calculated_displacement_info_to_tag(
         camera_parameters=camera_parameters,
-        reference_tag=april_tag_list[0]
+        reference_tag=april_tag
     )
     
+    displacement_d = reference_tag["displacements"]["d"]
+    displacement_z = reference_tag["displacements"]["z"]
+    displacement_y = reference_tag["displacements"]["y"]
+    displacement_x = reference_tag["displacements"]["x"]
+    
+    assert displacement_d == pytest.approx(.539, rel=.01)
+    assert displacement_z == pytest.approx(.529, rel=.01)
+    assert displacement_x == pytest.approx(-.095, rel=.01)
+    assert displacement_y == pytest.approx(-.0385, rel=.01)
+    
+    graph_util.plot_calculated_displacements_graph_info(image, dst, april_tag)
+    
+def test_calculate_displacement_02():
+    src = IMG_DIR / "test_02.jpg"
+    dst = IMG_DIR / "test_02_out.png"
+
+    image = cv2.imread(str(src))
+    
+    assert image is not None, "Failed to read test image"
+    
+    april_tag_list = scanner_util.scan_apriltags(image)
+    april_tag = april_tag_list[0]
+    reference_tag = calculated_displacements_util.add_calculated_displacement_info_to_tag(
+        camera_parameters=camera_parameters,
+        reference_tag=april_tag
+    )
+    
+    displacement_d = reference_tag["displacements"]["d"]
+    displacement_z = reference_tag["displacements"]["z"]
+    displacement_y = reference_tag["displacements"]["y"]
+    displacement_x = reference_tag["displacements"]["x"]
+    
+    assert displacement_d == pytest.approx(.857, rel=.01)
+    assert displacement_z == pytest.approx(.852, rel=.01)
+    assert displacement_x == pytest.approx(.0695, rel=.01)
+    assert displacement_y == pytest.approx(-.0683, rel=.01)
+    
+    graph_util.plot_calculated_displacements_graph_info(image, dst, april_tag)
+    
+def test_calculated_displacement_03():
+    src = IMG_DIR / "test_03.jpg"
+    dst = IMG_DIR / "test_03_out.png"
+
+    image = cv2.imread(str(src))
+    
+    assert image is not None, "Failed to read test image"
+    
+    april_tag_list = scanner_util.scan_apriltags(image)
+    april_tag = april_tag_list[0]
+    reference_tag = calculated_displacements_util.add_calculated_displacement_info_to_tag(
+        camera_parameters=camera_parameters,
+        reference_tag=april_tag
+    )
+    
+    displacement_d = reference_tag["displacements"]["d"]
+    displacement_z = reference_tag["displacements"]["z"]
+    displacement_y = reference_tag["displacements"]["y"]
+    displacement_x = reference_tag["displacements"]["x"]
+    
+    assert displacement_d == pytest.approx(1.216, rel=.01)
+    assert displacement_z == pytest.approx(1.210, rel=.01)
+    assert displacement_x == pytest.approx(-0.0507, rel=.01)
+    assert displacement_y == pytest.approx(-0.1142, rel=.01)
+    
+    graph_util.plot_calculated_displacements_graph_info(image, dst, april_tag)
     

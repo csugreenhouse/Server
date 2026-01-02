@@ -136,3 +136,7 @@ def scan_green_blobs(image,
                 "mask": plant_mask
             })
     return plant_blob_list
+
+def scan_reference_tags(image, camera_parameters):
+    april_tag_list = scan_apriltags(image)
+    reference_tags = make_reference_tags(camera_parameters, april_tag_list)
