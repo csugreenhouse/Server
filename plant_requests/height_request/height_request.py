@@ -52,7 +52,7 @@ def height_request(image, reference_tags, camera_parameters):
         raise ValueError("Input image is None")
     if camera_parameters is None:
         raise ValueError("camera_parameters must be provided")
-    if len(reference_tags) is 0:
+    if len(reference_tags) == 0:
         raise ValueError("No reference tags were provided")
 
     apriltag_information_list = scanner_util.scan_apriltags(image)

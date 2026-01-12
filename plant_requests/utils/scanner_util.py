@@ -60,8 +60,6 @@ def scan_apriltags(image):
         else:
             raise ValueError(f"No april tags at all have been found")
   
-    if (len(valid_tags)>1):
-        warnings.warn(f"Multiple valid AprilTags detected ({len(valid_tags)})", RuntimeWarning)
     return valid_tags
 
 def get_first_april_tag_info(april_tag_list):
@@ -100,11 +98,6 @@ def scan_qrtags(image):
     if len(valid_tags) == 0:
         raise ValueError("No valid QR tags have been found")
 
-    if len(valid_tags) > 1:
-        warnings.warn(
-            f"Multiple valid QR Tags detected ({len(valid_tags)})",
-            RuntimeWarning
-        )
     return valid_tags
 
 def get_first_qr_tag_info(qr_tag_list):
