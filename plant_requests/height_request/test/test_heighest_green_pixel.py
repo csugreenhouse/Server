@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent
 IMG_DIR = BASE_DIR / "images" / "test_heighest_green_pixel"
 
 height_request = importlib.import_module("plant_requests.height_request.height_request")
-scanner_util = importlib.import_module("plant_requests.utils.scanner_util")
+reference_util = importlib.import_module("plant_requests.utils.reference_tag_util")
 graph_util = importlib.import_module("plant_requests.utils.graph_util")
 
 plastic_color_bounds = ((30, 60, 30),(70, 255, 200))
@@ -23,7 +23,7 @@ lettuce_color_bounds = ((30, 35, 30),(75, 255, 255))
 
 def test_methods_existence():
     assert hasattr(height_request, "get_heighest_green_pixel"), "get_heighest_green_pixel() not found"
-    assert hasattr(scanner_util, "scan_green_blobs"), "scan_green_blobs() not found"
+    assert hasattr(reference_util, "scan_green_blobs"), "scan_green_blobs() not found"
     assert hasattr(graph_util, "plot_heighest_green_pixel_graph_info"), "plot_heighest_green_pixel_graph_info() not found"
     
 def test_heighest_green_pixel_plastic():

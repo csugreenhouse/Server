@@ -12,8 +12,7 @@ if str(ROOT) not in os.sys.path:
 BASE_DIR = Path(__file__).resolve().parent
 IMG_DIR = BASE_DIR / "images" / "test_calculated_displacements"
 
-calculated_displacements_util = importlib.import_module("plant_requests.utils.info_getter_util")
-scanner_util = importlib.import_module("plant_requests.utils.scanner_util")
+reference_util = importlib.import_module("plant_requests.utils.reference_tag_util")
 graph_util = importlib.import_module("plant_requests.utils.graph_util")
 
 camera_parameters = {
@@ -27,8 +26,8 @@ camera_parameters = {
 }
 
 def test_methods_existence():
-    assert hasattr(calculated_displacements_util, "calculate_displacement"), "calculate_displacement() not found"
-    assert hasattr(scanner_util, "scan_apriltags"), "scan_apriltags() not found"
+    assert hasattr(reference_util, "calculate_displacement"), "calculate_displacement() not found"
+    assert hasattr(reference_util, "scan_apriltags"), "scan_apriltags() not found"
     #assert hasattr(graph_util, "plot_calculated_displacements_graph_info"), "plot_calculated_displacements_graph_info() not found"
     
 def test_calculate_displacement_01():
@@ -39,9 +38,9 @@ def test_calculate_displacement_01():
     
     assert image is not None, "Failed to read test image"
     
-    april_tag_list = scanner_util.scan_apriltags(image)
+    april_tag_list = reference_util.scan_apriltags(image)
     april_tag = april_tag_list[0]
-    reference_tag = calculated_displacements_util.add_calculated_displacement_info_to_tag(
+    reference_tag = reference_util.add_calculated_displacement_info_to_tag(
         camera_parameters=camera_parameters,
         reference_tag=april_tag
     )
@@ -66,9 +65,9 @@ def test_calculate_displacement_02():
     
     assert image is not None, "Failed to read test image"
     
-    april_tag_list = scanner_util.scan_apriltags(image)
+    april_tag_list = reference_util.scan_apriltags(image)
     april_tag = april_tag_list[0]
-    reference_tag = calculated_displacements_util.add_calculated_displacement_info_to_tag(
+    reference_tag = reference_util.add_calculated_displacement_info_to_tag(
         camera_parameters=camera_parameters,
         reference_tag=april_tag
     )
@@ -93,9 +92,9 @@ def test_calculated_displacement_03():
     
     assert image is not None, "Failed to read test image"
     
-    april_tag_list = scanner_util.scan_apriltags(image)
+    april_tag_list = reference_util.scan_apriltags(image)
     april_tag = april_tag_list[0]
-    reference_tag = calculated_displacements_util.add_calculated_displacement_info_to_tag(
+    reference_tag = reference_util.add_calculated_displacement_info_to_tag(
         camera_parameters=camera_parameters,
         reference_tag=april_tag
     )

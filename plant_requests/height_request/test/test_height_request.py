@@ -12,9 +12,9 @@ BASE_DIR = Path(__file__).resolve().parent
 IMG_DIR = BASE_DIR / "images" / "test_height_request"
 
 hr = importlib.import_module("plant_requests.height_request.height_request")
-scanner_util = importlib.import_module("plant_requests.utils.scanner_util")
+scanner_util = importlib.import_module("plant_requests.utils.reference_tag_util")
 graph_util = importlib.import_module("plant_requests.utils.graph_util")
-info_getter = importlib.import_module("plant_requests.utils.info_getter_util")
+reference_util = importlib.import_module("plant_requests.utils.reference_tag_util")
 
 plastic_color_bounds = ((30, 60, 30),(90, 255, 200))
 lettuce_color_bounds = ((30, 35, 30),(75, 255, 255))
@@ -35,7 +35,7 @@ def make_reference_tag(april_tag, scale_units_m, color_bounds, bias_units_m, pla
     reference_tag["color_bounds"] = color_bounds    
     reference_tag["bias_units_m"] = bias_units_m
     reference_tag["plant_bounds"] = plant_bounds
-    reference_tag = info_getter.add_calculated_displacement_info_to_tag(test_camera_parameters,reference_tag)
+    reference_tag = reference_util.add_calculated_displacement_info_to_tag(test_camera_parameters,reference_tag)
     return reference_tag
 
 def test_height_request_01():

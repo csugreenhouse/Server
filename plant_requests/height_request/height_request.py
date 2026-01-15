@@ -8,10 +8,11 @@ import psycopg2
 import sys
 sys.path.append('/srv/samba/Server/plant_requests')
 import numpy as np
-import plant_requests.utils.scanner_util as scanner_util
-import plant_requests.utils.info_getter_util as info_getter_util
+import plant_requests.utils.reference_tag_util as reference_tag_util
+import plant_requests.utils.database_util as database_util
 import plant_requests.utils.line_util as line_util
-import plant_requests.utils.image_getter_util as image_getter_util
+import plant_requests.utils.image_util as image_util
+import plant_requests.utils.reference_tag_util as reference_util
 
 
 def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1)):
@@ -24,7 +25,7 @@ def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1)):
         mask[:, x_min:x_max] = 255
         image = cv2.bitwise_and(image, image, mask=mask)
     
-    plant_blob_list = scanner_util.scan_green_blobs(image, color_bounds)
+    plant_blob_list = reference_tag_util.scan_green_blobs(image, color_bounds)
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     if len(plant_blob_list) == 0:
         raise ValueError("No plant detected in the image")
@@ -55,8 +56,8 @@ def height_request(image, reference_tags, camera_parameters):
     if len(reference_tags) == 0:
         raise ValueError("No reference tags were provided")
 
-    apriltag_information_list = scanner_util.scan_apriltags(image)
-    qrtag_information_list = scanner_util.scan_qrtags(image)
+    apriltag_information_list = reference_tag_util.scan_apriltags(image)
+    qrtag_information_list = reference_tag_util.scan_qrtags(image)
     
     estimated_heights, estimated_heights_info = estimate_multiple_heights(image, reference_tags)
 

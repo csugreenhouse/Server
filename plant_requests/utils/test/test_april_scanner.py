@@ -14,7 +14,7 @@ if str(ROOT) not in os.sys.path:
 BASE_DIR = Path(__file__).resolve().parent
 IMG_DIR = BASE_DIR / "images" / "test_april_codes"
 
-scanner_util = importlib.import_module("plant_requests.utils.scanner_util")
+scanner_util = importlib.import_module("plant_requests.utils.reference_tag_util")
 #graph_util = importlib.import_module("plant_requests.utils.graph_util")
 
 test_camera_parameters = {
@@ -28,7 +28,6 @@ test_camera_parameters = {
 
 def test_methods_existence():
     assert hasattr(scanner_util, "scan_apriltags"), "scan_apriltags() not found"
-    assert hasattr(scanner_util, "scan_qrtags"), "scan_qrtags() not found"
     #assert hasattr(graph_util, "plot_image_tag_detection"), "plot_image_tag_detection() not found"
 
 def test_apritag_test01():

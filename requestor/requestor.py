@@ -11,7 +11,7 @@ import numpy as np
 
 import plant_requests.height_request.height_request as hr
 import plant_requests.utils.graph_util as graph
-import plant_requests.utils.info_getter_util as info_getter_util
+import plant_requests.utils.database_util as database_util
 
 
 def get_image(url):
@@ -46,13 +46,13 @@ def request_organizer(reference_tags, camera_parameters, image):
 
 # SET WHICH CAMERAS TO USE. THIS WILL EVENTUALLY COME FROM THE DATABASE  
 camera_ids = [1]
-camera_IPs = [data.get_camera_ip(camera_id) for camera_id in camera_ids]
+camera_IPs = [database_util.get_camera_ip(camera_id) for camera_id in camera_ids]
 
 #get the image from the first camera
 
 image = get_image(f"http://{camera_IPs[0]}/capture")
-camera_parameters = hr.info_getter_util.qeury_camera_parameters(camera_ids[0])
-reference_tags = hr.info_getter_util.get_reference_tags(image, camera_parameters)
+#camera_parameters = hr.info_getter_util.qeury_camera_parameters(camera_ids[0])
+#reference_tags = hr.info_getter_util.get_reference_tags(image, camera_parameters)
 
 
 
