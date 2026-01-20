@@ -35,7 +35,8 @@ def make_reference_tag(april_tag, scale_units_m, color_bounds, bias_units_m, pla
     reference_tag["color_bounds"] = color_bounds    
     reference_tag["bias_units_m"] = bias_units_m
     reference_tag["plant_bounds"] = plant_bounds
-    reference_tag = reference_util.add_calculated_displacement_info_to_tag(test_camera_parameters,reference_tag)
+    reference_tag = reference_util.add_calculated_displacement_info_to_tag(
+        test_camera_parameters,reference_tag)
     return reference_tag
 
 def test_height_request_01():

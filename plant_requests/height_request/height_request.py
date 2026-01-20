@@ -14,6 +14,32 @@ import plant_requests.utils.line_util as line_util
 import plant_requests.utils.image_util as image_util
 import plant_requests.utils.reference_tag_util as reference_util
 
+def scan_green_blobs(image,
+                color_bounds,
+                open_kernel_size=(5,5),
+                close_kernel_size=(5,5),
+                minimum_area_pixels=500,
+                maximum_area_pixels=100000
+                ):
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, color_bounds[0], color_bounds[1])
+    k_open = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, open_kernel_size)
+    k_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, close_kernel_size)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, k_open)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k_close)
+    numb_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask, connectivity=8)
+    plant_blob_list = []
+    for label in range(1, numb_labels):
+        area = stats[label, cv2.CC_STAT_AREA]
+        if minimum_area_pixels <= area <= maximum_area_pixels:
+            plant_mask = (labels == label).astype("uint8") * 255
+            plant_blob_list.append({
+                "label": label,
+                "centroid": (float(centroids[label][0]), float(centroids[label][1])),
+                "area": int(area),
+                "mask": plant_mask
+            })
+    return plant_blob_list
 
 def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1)):
     W,H = image.shape[1], image.shape[0]
@@ -25,7 +51,7 @@ def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1)):
         mask[:, x_min:x_max] = 255
         image = cv2.bitwise_and(image, image, mask=mask)
     
-    plant_blob_list = reference_tag_util.scan_green_blobs(image, color_bounds)
+    plant_blob_list = scan_green_blobs(image, color_bounds)
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     if len(plant_blob_list) == 0:
         raise ValueError("No plant detected in the image")

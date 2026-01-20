@@ -34,7 +34,6 @@ test_camera_parameters = {
 def test_methods_existence():
     assert hasattr(hr, "estimate_height"), "estimate_height() not found"
     assert hasattr(reference_util, "scan_apriltags"), "scan_apriltags() not found"
-    assert hasattr(reference_util, "get_first_april_tag_info"), "get_first_april_tag_info() not found"
     assert hasattr(graph_util, "plot_estimate_height_graph_info"), "plot_estimate_height_graph_info() not found"
 
 def test_estimate_height_6CM():

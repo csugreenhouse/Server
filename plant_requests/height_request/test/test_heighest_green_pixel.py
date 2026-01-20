@@ -23,7 +23,6 @@ lettuce_color_bounds = ((30, 35, 30),(75, 255, 255))
 
 def test_methods_existence():
     assert hasattr(height_request, "get_heighest_green_pixel"), "get_heighest_green_pixel() not found"
-    assert hasattr(reference_util, "scan_green_blobs"), "scan_green_blobs() not found"
     assert hasattr(graph_util, "plot_heighest_green_pixel_graph_info"), "plot_heighest_green_pixel_graph_info() not found"
     
 def test_heighest_green_pixel_plastic():

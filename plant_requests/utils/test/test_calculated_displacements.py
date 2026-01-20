@@ -40,6 +40,7 @@ def test_calculate_displacement_01():
     
     april_tag_list = reference_util.scan_apriltags(image)
     april_tag = april_tag_list[0]
+    april_tag["scale_units_m"]=.065
     reference_tag = reference_util.add_calculated_displacement_info_to_tag(
         camera_parameters=camera_parameters,
         reference_tag=april_tag
@@ -67,6 +68,7 @@ def test_calculate_displacement_02():
     
     april_tag_list = reference_util.scan_apriltags(image)
     april_tag = april_tag_list[0]
+    april_tag["scale_units_m"]=.065
     reference_tag = reference_util.add_calculated_displacement_info_to_tag(
         camera_parameters=camera_parameters,
         reference_tag=april_tag
@@ -94,6 +96,7 @@ def test_calculated_displacement_03():
     
     april_tag_list = reference_util.scan_apriltags(image)
     april_tag = april_tag_list[0]
+    april_tag["scale_units_m"]=.065
     reference_tag = reference_util.add_calculated_displacement_info_to_tag(
         camera_parameters=camera_parameters,
         reference_tag=april_tag
