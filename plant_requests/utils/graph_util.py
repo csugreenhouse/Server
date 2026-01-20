@@ -3,7 +3,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 import warnings
 import numpy as np
+import matplotlib.patches as patches
 from plant_requests.utils.line_util import get_equation_of_line, get_vertical_line, fractional_height_between_lines, get_intercept_of_lines
+
+color_pallet = ['cyan', 'yellow', 'magenta', 'orange', 'pink', 'lime', 'aqua']
+
+def plot_reference_tag(image,out_path, reference_tag):
+    graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    W,H = graph_rgb.shape[1], graph_rgb.shape[0]
+    fig, ax = plt.subplots()
+    ax.imshow(graph_rgb)
+    ax.axis('on')
+
+    add_tag(ax,reference_tag)
+    views = reference_tag["views"]
+
+    for i, view in enumerate(views):
+        add_view(ax,W,H,view,facecolor=color_pallet[i])
+ 
+    ax.set_title("REFERENCE TAG")
+
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
+    plt.savefig(str(out_path), bbox_inches="tight")
+    plt.close(fig)
+
 
 def plot_height_request_graph_info(image, out_path, graph_info):
     estimed_heights = graph_info["estimated_heights"]
@@ -111,7 +134,6 @@ def add_estimate_height_graph_info(ax, W, H,graph_info, color='cyan'):
     add_green_blobs(ax, graph_info["green_blob_list"], color='lime')
     # add legend
     
-    
 def plot_heighest_green_pixel_graph_info(image, out_path, graph_info):
     # Initialize the graph
     graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -180,7 +202,23 @@ def add_camera_view_frustum(ax, heighest_green_pixel,camera_parameters, referenc
     ax.plot([heighest_green_pixel[0], x_point], [heighest_green_pixel[1], y_point], color=color, linewidth=1)
     ax.plot([], [], color=color, label='Camera View to Heighest Plant Pixel \n (May indicate occlusion or steep angle)')
 
-    
+def add_view(ax,W,H,view,facecolor='cyan'):
+    lower = view["image_bound_lower"]
+    upper = view["image_bound_upper"]
+    plant_id = view["plant_id"]
+    x = lower*W
+    y = 0
+    width = (upper-lower)*W
+    rect = patches.Rectangle(
+        (x,y),
+        width,
+        H,
+        alpha=0.3,
+        facecolor=facecolor
+    )
+    ax.add_patch(rect)
+    ax.plot([], [], color=facecolor, label=f'bounds for plant_id {plant_id}')
+
 def add_tag(ax, tag, color='cyan', center_size=20):
     try:
         corners = tag["corners"]

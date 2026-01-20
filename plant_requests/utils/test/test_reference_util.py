@@ -7,15 +7,16 @@ import apriltag
 import array
 import cv2
 # Make sure Python can import modules from the repo root no matter the CWD
+
 ROOT = Path(__file__).resolve().parents[3]  # repo root (/srv/samba/Server)
 if str(ROOT) not in os.sys.path:
     os.sys.path.insert(0, str(ROOT))
 
 BASE_DIR = Path(__file__).resolve().parent
-IMG_DIR = BASE_DIR / "images" / "test_april_codes"
+IMG_DIR = BASE_DIR / "images" / "test_reference_util"
 
 reference_util = importlib.import_module("plant_requests.utils.reference_tag_util")
-#graph_util = importlib.import_module("plant_requests.utils.graph_util")
+graph_util = importlib.import_module("plant_requests.utils.graph_util")
 
 
 test_camera_parameters = {
@@ -32,8 +33,8 @@ def test_methods_existence():
     #assert hasattr(graph_util, "plot_image_tag_detection"), "plot_image_tag_detection() not found"
 
 def test_apritag_test01():
-    src = IMG_DIR / "TEST01.jpg"
-    dst = IMG_DIR / "TEST01_out.png"
+    src = IMG_DIR / "test_april_codes" /"TEST01.jpg"
+    dst = IMG_DIR / "test_april_codes" /"TEST01_out.png"
     image = cv2.imread(str(src))
     tag_info = reference_util.scan_apriltags(image)[0]
 
@@ -51,8 +52,8 @@ def test_apritag_test01():
     assert bl == approx((262.30166625978956, 369.2857971191188),rel=1e-3,abs=0.5)
     
 def test_apritag_test02():
-    src = IMG_DIR / "TEST02.jpg"
-    dst = IMG_DIR / "TEST02_out.png"
+    src = IMG_DIR / "test_april_codes" /"TEST02.jpg"
+    dst = IMG_DIR / "test_april_codes" /"TEST02_out.png"
     
     image = cv2.imread(str(src))
     tag_info = reference_util.scan_apriltags(image)[0]
@@ -70,8 +71,8 @@ def test_apritag_test02():
     assert bl == approx((554.6207275390632, 338.9519042968744),rel=1e-3,abs=0.5)
 
 def test_apritag_test03():
-    src = IMG_DIR / "TEST03.jpg"
-    dst = IMG_DIR / "TEST03_out.png"
+    src = IMG_DIR / "test_april_codes"  /"TEST03.jpg"
+    dst = IMG_DIR / "test_april_codes" /"TEST03_out.png"
     
     image = cv2.imread(str(src))
     tag_info = reference_util.scan_apriltags(image)[0]
@@ -89,10 +90,53 @@ def test_apritag_test03():
     assert bl == approx((440.6880798339846, 313.9172973632811), rel=1e-3,abs=0.5)
 
 def test_apritag_testNONE():
-    src = IMG_DIR / "TESTNONE.jpg"
+    src = IMG_DIR / "test_april_codes" /"TESTNONE.jpg"
     image = cv2.imread(str(src))
     
     with pytest.raises(ValueError) as excinfo:
         tag_info = reference_util.scan_apriltags(image)
     
     assert "No april tags at all have been found" in str(excinfo.value)
+
+views = [
+    {'plant_id': 1,
+    'bias_units_m': ('0'), 
+    'request_type': 'height', 
+    'image_bound_upper': (.3), 
+    'image_bound_lower': (.05), 
+    'lower_color_bound': (0, 100, 0), 
+    'upper_color_bound': (100, 100, 0)}, 
+    {'plant_id': 2,
+    'bias_units_m': ('0'), 
+    'request_type': 'height', 
+    'image_bound_upper': (.6), 
+    'image_bound_lower': (.35), 
+    'lower_color_bound': (0, 100, 0), 
+    'upper_color_bound': (100, 100, 0)},
+    {'plant_id': 2,
+    'bias_units_m': ('0'), 
+    'request_type': 'height', 
+    'image_bound_upper': (1), 
+    'image_bound_lower': (.55), 
+    'lower_color_bound': (0, 100, 0), 
+    'upper_color_bound': (100, 100, 0)}
+]
+
+def test_make_referencetag_TEST00():
+    src = IMG_DIR / "test_reference_tag" /"TEST00.jpg"
+    dst = IMG_DIR / "test_reference_tag" /"TEST00_out.png"
+    image = cv2.imread(str(src))
+    raw_tags = reference_util.scan_raw_tags(image)
+    reference_tag = reference_util.make_reference_tag(raw_tags[0], test_camera_parameters, scale=.65, views=views)
+    graph_util.plot_reference_tag(image, dst, reference_tag)
+
+def test_make_referencetag_TEST00():
+    src = IMG_DIR / "test_reference_tag" /"TEST00.jpg"
+    dst = IMG_DIR / "test_reference_tag" /"TEST00NOVIEWS_out.png"
+    image = cv2.imread(str(src))
+    raw_tags = reference_util.scan_raw_tags(image)
+    with pytest.raises(ValueError):
+        reference_tag = reference_util.make_reference_tag(raw_tags[0], test_camera_parameters, scale=.65, views=[])
+    graph_util.plot_reference_tag(image, dst, reference_tag)
+
+
