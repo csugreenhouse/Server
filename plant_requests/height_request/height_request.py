@@ -95,7 +95,6 @@ def height_request(image, reference_tags, camera_parameters):
         "april_list": apriltag_information_list,
         "camera_parameters": camera_parameters,
     }
-
     return estimated_heights, graph_info
 
 def estimate_multiple_heights(image, reference_tags):

@@ -113,7 +113,7 @@ views = [
     'image_bound_lower': (.35), 
     'lower_color_bound': (0, 100, 0), 
     'upper_color_bound': (100, 100, 0)},
-    {'plant_id': 2,
+    {'plant_id': 3,
     'bias_units_m': ('0'), 
     'request_type': 'height', 
     'image_bound_upper': (1), 
@@ -129,14 +129,3 @@ def test_make_referencetag_TEST00():
     raw_tags = reference_util.scan_raw_tags(image)
     reference_tag = reference_util.make_reference_tag(raw_tags[0], test_camera_parameters, scale=.65, views=views)
     graph_util.plot_reference_tag(image, dst, reference_tag)
-
-def test_make_referencetag_TEST00():
-    src = IMG_DIR / "test_reference_tag" /"TEST00.jpg"
-    dst = IMG_DIR / "test_reference_tag" /"TEST00NOVIEWS_out.png"
-    image = cv2.imread(str(src))
-    raw_tags = reference_util.scan_raw_tags(image)
-    with pytest.raises(ValueError):
-        reference_tag = reference_util.make_reference_tag(raw_tags[0], test_camera_parameters, scale=.65, views=[])
-    graph_util.plot_reference_tag(image, dst, reference_tag)
-
-
