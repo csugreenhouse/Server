@@ -14,6 +14,8 @@ import plant_requests.utils.line_util as line_util
 import plant_requests.utils.image_util as image_util
 import plant_requests.utils.reference_tag_util as reference_util
 
+# THESE ARE HELPERS FOR HEIGHT REQUEST
+
 def scan_green_blobs(image,
                 color_bounds,
                 open_kernel_size=(5,5),
@@ -71,69 +73,90 @@ def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1)):
         "green_blob_list": plant_blob_list,
         "plant_bounds": plant_bounds
     }
-    return heighest_pixel, graph_info
+    
+    return graph_info
+
+# INTERACTION POINT BETWEEN REQUESTOR AND HEIGHT_REQUEST
 
 def height_request(image, reference_tags, camera_parameters):
-    
     if image is None:
         raise ValueError("Input image is None")
     if camera_parameters is None:
         raise ValueError("camera_parameters must be provided")
     if len(reference_tags) == 0:
         raise ValueError("No reference tags were provided")
-
-    apriltag_information_list = reference_tag_util.scan_apriltags(image)
-    qrtag_information_list = reference_tag_util.scan_qrtags(image)
     
-    estimated_heights, estimated_heights_info = estimate_multiple_heights(image, reference_tags)
+    response = estimate_heights_reference_tags(image, reference_tags)
+    return response
 
+"""
+ #PERFORM THE HEIGHT ESTIMATION AND RETURN THE APPROPRIATE DEBUG. RESPONSE IS IN FORMAT
+        response [{
+            "reference_tag": reference_tag,
+            "plant_id": plant_id,
+            "estimated_height": estimated_height,
+            "fractional_height": fractional_height,
+            "equation_top": equation_top,
+            "equation_bottom": equation_bottom,
+            "heighest_green_pixel": heighest_green_pixel,
+            "green_blob_list": green_blob_list,
+            "plant_bounds" :plant_bounds,
+            "color_bounds" :color_bounds,
+            "bias_units_m" : bias_units_m
+        }] WITH A LIST OF OTHER RESPONSES
+"""
 
-    graph_info = {
-        "estimated_heights": estimated_heights,
-        "estimated_heights_info": estimated_heights_info,
-        "qr_list": qrtag_information_list,
-        "april_list": apriltag_information_list,
-        "camera_parameters": camera_parameters,
-    }
-    return estimated_heights, graph_info
-
-def estimate_multiple_heights(image, reference_tags):
-    estimated_heights = []
-    estimated_heights_info = []
+def estimate_heights_reference_tags(image, reference_tags):
+    response = []
     for reference_tag in reference_tags:
-        estimated_height, estimate_height_graph_info = estimate_height(image, reference_tag)
-        estimated_heights.append(estimated_height)
-        estimated_heights_info.append(estimate_height_graph_info)
-    return estimated_heights, estimated_heights_info
+        reference_tag_response = estimate_heights_reference_tag(image, reference_tag)
+        response+=reference_tag_response
+    return response
 
-def estimate_height(image, reference_tag):
-    color_bounds = reference_tag["color_bounds"]
-    plant_bounds = reference_tag["plant_bounds"]
+def estimate_heights_reference_tag(image, reference_tag):
+    response = []
+    views = reference_tag["views"]
+    
     corners = reference_tag["corners"]
     tag_top_left_corner = corners["top_left"]
     tag_top_right_corner = corners["top_right"]
     tag_bottom_right_corner = corners["bottom_right"]
     tag_bottom_left_corner = corners["bottom_left"]
     tag_scale_units_m = reference_tag["scale_units_m"]
-    tag_bias_units_m = reference_tag["bias_units_m"]
-
-    heighest_green_pixel, heighest_green_pixel_graph_info = get_heighest_green_pixel(image, color_bounds, plant_bounds)
-
-    equation_top = line_util.get_equation_of_line(tag_top_left_corner, tag_top_right_corner)
-    equation_bottom = line_util.get_equation_of_line(tag_bottom_left_corner, tag_bottom_right_corner)
-
-    fractional_height = line_util.fractional_height_between_lines(equation_top, equation_bottom, heighest_green_pixel)
-
-    estimated_height = tag_scale_units_m * fractional_height + tag_bias_units_m 
-
-    graph_info = {
-        "estimated_height" : estimated_height,
-        "heighest_green_pixel" : heighest_green_pixel,
-        "equation_top": equation_top,
-        "equation_bottom": equation_bottom,
-        "fractional_height": fractional_height,
-        "reference_tag": reference_tag,
-        "green_blob_list": heighest_green_pixel_graph_info["green_blob_list"],
-    }
-
-    return estimated_height, graph_info
+    
+    for view in views:
+        plant_id = view["plant_id"]
+        bias_units_m = view["bias_units_m"]
+        plant_bounds = (view["image_bound_lower"],view["image_bound_upper"])
+        color_bounds = (view["color_bound_lower"],view["color_bound_upper"])
+        
+        heighest_green_pixel_info = get_heighest_green_pixel(image, color_bounds, plant_bounds)
+        heighest_green_pixel = heighest_green_pixel_info["heighest_green_pixel"]
+        green_blob_list = heighest_green_pixel_info["green_blob_list"]
+        plant_bounds =heighest_green_pixel_info["plant_bounds"]
+        
+        equation_top = line_util.get_equation_of_line(tag_top_left_corner, tag_top_right_corner)
+        equation_bottom = line_util.get_equation_of_line(tag_bottom_left_corner, tag_bottom_right_corner)
+        
+        fractional_height = line_util.fractional_height_between_lines(equation_top, equation_bottom, heighest_green_pixel)
+        
+        
+        estimated_height = tag_scale_units_m * fractional_height + bias_units_m 
+        
+        view_response = {
+            "reference_tag": reference_tag,
+            "plant_id": plant_id,
+            "estimated_height": estimated_height,
+            "fractional_height": fractional_height,
+            "equation_top": equation_top,
+            "equation_bottom": equation_bottom,
+            "heighest_green_pixel": heighest_green_pixel,
+            "green_blob_list": green_blob_list,
+            "plant_bounds" :plant_bounds,
+            "color_bounds" :color_bounds,
+            "bias_units_m" : bias_units_m
+        }
+        
+        response.append(view_response)
+    
+    return response

@@ -19,6 +19,8 @@ reference_util = importlib.import_module("plant_requests.utils.reference_tag_uti
 plastic_color_bounds = ((30, 10, 30),(70, 255, 200))
 lettuce_color_bounds = ((30, 35, 30),(75, 255, 255))
 
+test_scale = .07
+
 test_camera_parameters = {
     "camera_id": 1,
     "width": 1024,
@@ -29,46 +31,50 @@ test_camera_parameters = {
     "ip_address": "192.168.0.11"
     }
 
-
-
 def test_methods_existence():
-    assert hasattr(hr, "estimate_height"), "estimate_height() not found"
+    assert hasattr(hr, "estimate_heights_reference_tags"), "estimate_heights_reference_tags() not found"
+    assert hasattr(hr, "estimate_heights_reference_tag"), "estimate_heights_reference_tag() not found"
     assert hasattr(reference_util, "scan_apriltags"), "scan_apriltags() not found"
-    assert hasattr(graph_util, "plot_estimate_height_graph_info"), "plot_estimate_height_graph_info() not found"
+    #assert hasattr(graph_util, "plot_estimate_height_graph_info"), "plot_estimate_height_graph_info() not found"
 
 def test_estimate_height_6CM():
     src = IMG_DIR / "test_6cm.jpg"
     dst = IMG_DIR / "test_6cm_out.png"
     image = cv2.imread(str(src))
-
-    april_tag = reference_util.scan_apriltags(image)[0]
-    reference_tag = april_tag
-    reference_tag["scale_units_m"] = .07
-    reference_tag["color_bounds"] = plastic_color_bounds
-    reference_tag["bias_units_m"] = .01
-    reference_tag["plant_bounds"] = (.35, .6)
-
-    estimated_height, debug_info = hr.estimate_height(image, april_tag)
-
-    graph_util.plot_estimate_height_graph_info(image, dst, debug_info)
-
-    assert estimated_height == pytest.approx(.06, rel=.20)
+    color_bounds = plastic_color_bounds
+    plant_bounds = (.35, .6)
+    plant_id = 1
+    bias = .01
     
+    views = [reference_util.make_height_view(plant_id,plant_bounds,color_bounds,bias)]
+    raw_april_tag = reference_util.scan_raw_tags(image)[0]
+    reference_tag = reference_util.make_reference_tag(raw_april_tag,test_camera_parameters,scale=test_scale,views=views)
+    estimated_height_response =  hr.estimate_heights_reference_tags(image, [reference_tag])
+    
+    graph_util.plot_estimated_heights_response(image,dst,estimated_height_response)
+    
+    estimated_height = estimated_height_response[0]["estimated_height"]
+    assert estimated_height == pytest.approx(.06, rel=.20)
+   
+
 def test_estimate_height_10CM():
     src = IMG_DIR / "test_10cm.jpg"
     dst = IMG_DIR / "test_10cm_out.png"
+    
     image = cv2.imread(str(src))
-
-    april_tag = reference_util.scan_apriltags(image)[0]
-    reference_tag = april_tag
-    reference_tag["scale_units_m"] = .065
-    reference_tag["color_bounds"] = plastic_color_bounds
-    reference_tag["bias_units_m"] = .01
-    reference_tag["plant_bounds"] = (.30, .65)
-
-    estimated_height, debug_info = hr.estimate_height(image, april_tag)
-
-    graph_util.plot_estimate_height_graph_info(image, dst, debug_info)
+    color_bounds = plastic_color_bounds
+    plant_bounds = (.35, .6)
+    plant_id = 1
+    bias = .01
+    
+    views = [reference_util.make_height_view(plant_id,plant_bounds,color_bounds,bias)]
+    raw_april_tag = reference_util.scan_raw_tags(image)[0]
+    reference_tag = reference_util.make_reference_tag(raw_april_tag,test_camera_parameters,scale=test_scale,views=views)
+    estimated_height_response =  hr.estimate_heights_reference_tags(image, [reference_tag])
+    
+    graph_util.plot_estimated_heights_response(image,dst,estimated_height_response)
+    
+    estimated_height = estimated_height_response[0]["estimated_height"]
     
     assert estimated_height == pytest.approx(.10, rel=.20)
 
@@ -77,18 +83,22 @@ def test_estimate_height_16CM():
     dst = IMG_DIR / "test_16cm_out.png"
     image = cv2.imread(str(src))
 
-    april_tag = reference_util.scan_apriltags(image)[0]
-    reference_tag = april_tag
-    reference_tag["scale_units_m"] = .065
-    reference_tag["color_bounds"] = plastic_color_bounds
-    reference_tag["bias_units_m"] = .01
-    reference_tag["plant_bounds"] = (.3, .65)
+    color_bounds = plastic_color_bounds
+    plant_bounds = (.35, .6)
+    plant_id = 1
+    bias = .01
+    
+    views = [reference_util.make_height_view(plant_id,plant_bounds,color_bounds,bias)]
+    raw_april_tag = reference_util.scan_raw_tags(image)[0]
+    reference_tag = reference_util.make_reference_tag(raw_april_tag,test_camera_parameters,scale=test_scale,views=views)
+    estimated_height_response =  hr.estimate_heights_reference_tags(image, [reference_tag])
+    
+    graph_util.plot_estimated_heights_response(image,dst,estimated_height_response)
+    
+    estimated_height = estimated_height_response[0]["estimated_height"]
+    
 
-    estimated_height, debug_info = hr.estimate_height(image, april_tag)
-
-    graph_util.plot_estimate_height_graph_info(image, dst, debug_info)
     assert estimated_height == pytest.approx(.16, rel=.20)
-
 
 
 

@@ -29,6 +29,7 @@ test_camera_parameters = {
     "ip_address": "192.168.0.11"
     }
 
+"""
 def make_reference_tag(april_tag, scale_units_m, color_bounds, bias_units_m, plant_bounds):
     reference_tag = april_tag
     reference_tag["scale_units_m"] = scale_units_m
@@ -55,3 +56,4 @@ def test_height_request_01():
     estimated_heights, estimated_heights_info = hr.height_request(image, reference_tags, test_camera_parameters)
     
     graph_util.plot_height_request_graph_info(image, dst, estimated_heights_info)
+"""

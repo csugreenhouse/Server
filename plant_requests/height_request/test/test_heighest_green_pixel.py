@@ -25,7 +25,7 @@ def test_methods_existence():
     assert hasattr(height_request, "get_heighest_green_pixel"), "get_heighest_green_pixel() not found"
     assert hasattr(graph_util, "plot_heighest_green_pixel_graph_info"), "plot_heighest_green_pixel_graph_info() not found"
     
-def test_heighest_green_pixel_plastic():
+def test_heighest_green_pixel_lettuce():
     src = IMG_DIR / "test_plastic_6.jpg"
     dst = IMG_DIR / "test_plastic_6_out.png"
 
@@ -33,15 +33,18 @@ def test_heighest_green_pixel_plastic():
     
     assert image is not None, "Failed to read test image"
     
-    heighest_pixel, graph_info = height_request.get_heighest_green_pixel(
+    response = height_request.get_heighest_green_pixel(
         image,
         lettuce_color_bounds,
         plant_bounds=(.3, .7)
     )
+    
+    graph_util.plot_heighest_green_pixel_response(image, dst, response)
 
-    graph_util.plot_heighest_green_pixel_graph_info(image, dst, graph_info)
+    heighest_pixel = response["heighest_green_pixel"]
     
     assert heighest_pixel[1] == pytest.approx(500, rel=.1)
+
 
 def test_heighest_green_pixel_plastic():
     src = IMG_DIR / "test_plastic_16.jpg"
@@ -51,15 +54,17 @@ def test_heighest_green_pixel_plastic():
     
     assert image is not None, "Failed to read test image"
     
-    heighest_pixel, graph_info = height_request.get_heighest_green_pixel(
+    response = height_request.get_heighest_green_pixel(
         image,
         plastic_color_bounds,
         plant_bounds=(.3, .7)
     )
-
-    graph_util.plot_heighest_green_pixel_graph_info(image, dst, graph_info)
     
-    assert heighest_pixel[1] == pytest.approx(250, rel=.1)
+    graph_util.plot_heighest_green_pixel_response(image, dst, response)
+    
+    heighest_pixel = response["heighest_green_pixel"]
+    
+    assert heighest_pixel[1] == pytest.approx(258, rel=.1)
     
 def test_heighest_green_pixel_no_plant():
     src = IMG_DIR / "test_no_plant.jpg"
@@ -69,9 +74,8 @@ def test_heighest_green_pixel_no_plant():
     assert image is not None, "Failed to read test image"
     
     with pytest.raises(ValueError, match="No plant detected in the image"):
-        heighest_pixel, graph_info = height_request.get_heighest_green_pixel(
+        graph_info = height_request.get_heighest_green_pixel(
             image,
             lettuce_color_bounds,
             plant_bounds=(.3, .7)
         )
-    

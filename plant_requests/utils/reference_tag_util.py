@@ -12,7 +12,7 @@ def scan_raw_tags(image):
     options = apriltag.DetectorOptions(families="tag25h9")
     detector = apriltag.Detector(options)
     results = detector.detect(gray)
-    return results;
+    return results
 
 def scan_apriltags(image):
     gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
@@ -109,30 +109,35 @@ def scan_reference_tags(image, camera_parameters):
   
     return reference_tags
 
-def make_reference_tag(tag, camera_parameters, scale=None, views=None):
-    tag_id = tag.tag_id
+def make_reference_tag(raw_april_tag, camera_parameters, scale=None, views=None):
+    tag_id = raw_april_tag.tag_id
     scale = scale if scale is not None else database.get_tag_scale_from_database(tag_id)
     views = views if views is not None else database.get_tag_views_from_database(tag_id)
     corners = {
-        "top_left": tuple(tag.corners[0]),
-        "top_right": tuple(tag.corners[1]),
-        "bottom_right": tuple(tag.corners[2]),
-        "bottom_left": tuple(tag.corners[3]),
+        "top_left": tuple(raw_april_tag.corners[0]),
+        "top_right": tuple(raw_april_tag.corners[1]),
+        "bottom_right": tuple(raw_april_tag.corners[2]),
+        "bottom_left": tuple(raw_april_tag.corners[3]),
             }
-    center = tuple(tag.center)
+    center = tuple(raw_april_tag.center)
     displacement_d, displacement_z, displacement_x, displacement_y = calculate_displacement(camera_parameters, scale, center, corners )
     if views is []:
         raise ValueError("Views is none or is empty")
     for view in views:
         if (view["image_bound_upper"]<view["image_bound_lower"]):
             raise ValueError("image bounds in a view are switched")
-    # color_bounds, scale_units_m, bias_units_m = parse_qr_data(str(tag.tag_id))
     tag = {
-            "data": tag.tag_id,
+            "data": raw_april_tag.tag_id,
             "tag_type": "referencetag",
             "center": center,
             "corners": corners,
             "scale_units_m": scale,
+            "displacements": {
+                'd': displacement_d,
+                'z': displacement_z,
+                'x': displacement_x,
+                'y': displacement_y
+            },
             "views": views
         }
     return tag   
@@ -190,3 +195,13 @@ def add_calculated_displacement_info_to_tag(camera_parameters, reference_tag):
         'y': displacement_y
     }
     return reference_tag
+
+def make_height_view(plant_id, image_bounds, color_bounds, bias_units_m):
+    return {"plant_id": plant_id,
+            "bias_units_m":bias_units_m,
+            "image_bound_upper": image_bounds[1],
+            "image_bound_lower": image_bounds[0],
+            "color_bound_upper": color_bounds[1],
+            "color_bound_lower": color_bounds[0],
+            "request_type":'height',
+            }

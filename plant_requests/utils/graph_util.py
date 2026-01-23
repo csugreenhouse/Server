@@ -8,6 +8,8 @@ from plant_requests.utils.line_util import get_equation_of_line, get_vertical_li
 
 color_pallet = ['cyan', 'yellow', 'magenta', 'orange', 'pink', 'lime', 'aqua']
 
+# PLOT THE REFERENCE TAG
+
 def plot_reference_tag(image,out_path, reference_tag):
     graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     W,H = graph_rgb.shape[1], graph_rgb.shape[0]
@@ -26,8 +28,81 @@ def plot_reference_tag(image,out_path, reference_tag):
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
+    
+#PLOT THE estimate_heights_reference_tags response from height_request
+    
+def plot_estimated_heights_response(image, out_path, response):
+    graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    W,H = graph_rgb.shape[1], graph_rgb.shape[0]
+    fig, ax = plt.subplots()
+    
+    for i, view_response in enumerate(response):
+        color = color_pallet[i%len(color_pallet)]
+        plant_id = view_response["plant_id"]
+        estimated_height = view_response["estimated_height"]
+        green_blob_list = view_response["green_blob_list"]
+        tag_bias = view_response["bias_units_m"]
+        add_point(ax,view_response["heighest_green_pixel"],color="green")
+        add_plant_bounds(ax,W,H,view_response["plant_bounds"],color=color)
+        add_green_blobs(ax,green_blob_list,color)
+        ax.plot([], [], color=color, label=f"plant {plant_id}: {round(estimated_height*100,2)}cm")
+        
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
+    
+    ax.imshow(graph_rgb)
+    ax.axis('on')
+    plt.savefig(str(out_path), bbox_inches="tight")
+    plt.close(fig)
+    
+# Plot the response from heighest_green_pixel in height_request
+
+def plot_heighest_green_pixel_response(image, out_path, response):
+    graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    W,H = graph_rgb.shape[1], graph_rgb.shape[0]
+    fig, ax = plt.subplots()
+    
+    heighest_green_pixel = response["heighest_green_pixel"]
+    green_blob_list = response["green_blob_list"]
+    plant_bounds = response["plant_bounds"]
+    
+    add_point(ax,heighest_green_pixel,color="green")
+    add_plant_bounds(ax,W,H,plant_bounds,color="green")
+    add_green_blobs(ax,green_blob_list)
+    
+    ax.imshow(graph_rgb)
+    ax.axis('on')
+    plt.savefig(str(out_path), bbox_inches="tight")
+    plt.close(fig)
+    
+    
+# Plot the response from width_request
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
 def plot_height_request_graph_info(image, out_path, graph_info):
     estimed_heights = graph_info["estimated_heights"]
     estimated_heights_info = graph_info["estimated_heights_info"]
@@ -57,8 +132,9 @@ def plot_height_request_graph_info(image, out_path, graph_info):
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
-    
-def plot_estimate_height_graph_info(image, out_path, graph_info):
+'''
+'''
+def plot_estimate_heights(image, out_path, response):
     # Initialize the graph
     graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     W,H = graph_rgb.shape[1], graph_rgb.shape[0]
@@ -67,7 +143,7 @@ def plot_estimate_height_graph_info(image, out_path, graph_info):
     ax.axis('on')
     
     # initialize title string
-    estimated_height = graph_info["estimated_height"]
+    estimated_height = response["estimated_height"]
     fractional_height = graph_info["fractional_height"]
     reference_tag = graph_info["reference_tag"]
     
@@ -87,7 +163,7 @@ def plot_estimate_height_graph_info(image, out_path, graph_info):
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
-    
+''' 
 def plot_calculated_displacements_graph_info(image, out_path, reference_tag):
     # Initialize the graph
     graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -201,6 +277,19 @@ def add_camera_view_frustum(ax, heighest_green_pixel,camera_parameters, referenc
 
     ax.plot([heighest_green_pixel[0], x_point], [heighest_green_pixel[1], y_point], color=color, linewidth=1)
     ax.plot([], [], color=color, label='Camera View to Heighest Plant Pixel \n (May indicate occlusion or steep angle)')
+    
+def add_plant_bounds(ax,W,H,plant_bounds,color):
+    x = plant_bounds[0]*W
+    width_rectangle = (plant_bounds[1]-plant_bounds[0])*W
+    rect = patches.Rectangle(
+        (x,0),
+        width_rectangle,
+        H,
+        alpha=0.1,
+        facecolor=color
+    )
+    ax.add_patch(rect)
+    
 
 def add_view(ax,W,H,view,facecolor='cyan'):
     lower = view["image_bound_lower"]
@@ -242,7 +331,7 @@ def add_green_blobs(ax, plant_blob_list, color='lime'):
             contour = contour.squeeze()
             ax.plot(contour[:, 0], contour[:, 1], color=color, linewidth=2)
 
-def add_point(ax, point, color='blue', size=5):
+def add_point(ax, point, color='blue', size=10):
     x, y = point
     ax.add_patch(plt.Circle((x, y), size, color=color, fill=True))
 
