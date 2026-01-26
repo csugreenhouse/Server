@@ -29,6 +29,7 @@ def time_stamp():
 def save_image_to_server_directory(camera_id, image):
     save_path = f'/srv/samba/plants/image/cam{camera_id}/{time_stamp()}.jpg'
     cv2.imwrite(save_path, image)
+    return save_path
 
 
 
