@@ -1,95 +1,74 @@
 import cv2
 import numpy as np
-import apriltag
 import warnings
 import sys
 sys.path.append('/srv/samba/Server')
-
+from pupil_apriltags import Detector as PupilAprilTagDetector
 import plant_requests.utils.database_util as database
 
+_PUPIL_DETECTOR = None
+
+def _get_pupil_detector():
+    global _PUPIL_DETECTOR
+    if _PUPIL_DETECTOR is None:
+        _PUPIL_DETECTOR = PupilAprilTagDetector(
+            families="tag25h9",
+            nthreads=2,
+            quad_decimate=1.0,
+            quad_sigma=0.0,
+            refine_edges=1,
+            decode_sharpening=0.25,
+            debug=0,
+        )
+    return _PUPIL_DETECTOR
+
+
 def scan_raw_tags(image):
-    gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-    options = apriltag.DetectorOptions(families="tag25h9")
-    detector = apriltag.Detector(options)
-    results = detector.detect(gray)
-    return results
+    """Return raw pupil_apriltags detections."""
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    if gray.dtype != np.uint8:
+        gray = gray.astype(np.uint8)
+    detector = _get_pupil_detector()
+    return detector.detect(gray)
 
 def scan_apriltags(image):
-    gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-    options = apriltag.DetectorOptions(families="tag25h9")
-    detector = apriltag.Detector(options)
-    results = detector.detect(gray)
-    
-    DECISION_MARGIN = 40.0
+    """
+    Uses pupil_apriltags for detection but returns the SAME dict format you already use.
+    """
+    results = scan_raw_tags(image)
 
+    DECISION_MARGIN = 40.0
     valid_tags = []
 
-    for tag in results:
-        #print(f"TAG ID {tag.tag_id} with decision margin {tag.decision_margin}")
-        if (tag.decision_margin>DECISION_MARGIN):
-            # color_bounds, scale_units_m, bias_units_m = parse_qr_data(str(tag.tag_id))
+    for det in results:
+        # pupil_apriltags: det.tag_id, det.decision_margin, det.center, det.corners
+        if float(det.decision_margin) > DECISION_MARGIN:
+            corners = np.asarray(det.corners, dtype=np.float32)
+
+            # Expected order is typically TL, TR, BR, BL (matches your current indexing)
             tag = {
-                    "data": tag.tag_id,
-                    "tag_type": "apriltag",
-                    "center": tuple(tag.center),
-                    "corners": {
-                        "top_left": tuple(tag.corners[0]),
-                        "top_right": tuple(tag.corners[1]),
-                        "bottom_right": tuple(tag.corners[2]),
-                        "bottom_left": tuple(tag.corners[3]),
-                    },
-                }
-            
+                "data": int(det.tag_id),
+                "tag_type": "apriltag",
+                "center": tuple(np.asarray(det.center, dtype=np.float32)),
+                "corners": {
+                    # RELATIVE TO THE IMAGE, Y INCREASES DOWNWARDS, THUS SWITCH THE ORDER
+                    "top_left": tuple(corners[3]),
+                    "top_right": tuple(corners[2]),
+                    "bottom_right": tuple(corners[1]),
+                    "bottom_left": tuple(corners[0]),
+                },
+            }
             valid_tags.append(tag)
 
-    if (len(valid_tags)==0):
-        if (len(results)!=0):
-            raise ValueError(f"No Valid april tag has been detected, but a non valid one has been found")
-        else:
-            raise ValueError(f"No april tags at all have been found")
-  
-    return valid_tags
-
-def scan_qrtags(image):  
-    detector = cv2.QRCodeDetector()
-    retval, list_of_qr_data, list_of_qr_points, _ = detector.detectAndDecodeMulti(image)
-    valid_tags = []
-    if not retval or list_of_qr_points is None or list_of_qr_data is None:
-        raise ValueError("No QR tags have been found")
-    
-    for data, points in zip(list_of_qr_data, list_of_qr_points):
-    
-        # skip undecoded entries
-        if not data or points is None:
-            continue
-
-        # points has shape (4, 2)
-        center = tuple(points.mean(axis=0))
-        # data should be in form of a dictionary encoded as a string
-        
-        tag = {
-            "data": data,
-            "tag_type": "qrtag",
-            "center": center,
-            "corners": {
-                "top_left":     tuple(points[0]),
-                "top_right":    tuple(points[1]),
-                "bottom_right": tuple(points[2]),
-                "bottom_left":  tuple(points[3]),
-            },
-        }
-        valid_tags.append(tag)
-
     if len(valid_tags) == 0:
-        raise ValueError("No valid QR tags have been found")
-
+        if len(results) != 0:
+            raise ValueError("No valid april tag has been detected, but a non valid one has been found")
+        else:
+            raise ValueError("No april tags at all have been found")
     return valid_tags
 
 def scan_reference_tags(image, camera_parameters):
-    gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-    options = apriltag.DetectorOptions(families="tag25h9")
-    detector = apriltag.Detector(options)
-    results = detector.detect(gray)
+    results = scan_raw_tags(image)
     
     DECISION_MARGIN = 40.0
 
@@ -110,44 +89,52 @@ def scan_reference_tags(image, camera_parameters):
     return reference_tags
 
 def make_reference_tag(raw_april_tag, camera_parameters, scale=None, views=None):
-    tag_id = raw_april_tag.tag_id
+    # pupil_apriltags detection fields:
+    #   raw_april_tag.tag_id, raw_april_tag.corners, raw_april_tag.center
+    tag_id = int(raw_april_tag.tag_id)
+
     scale = scale if scale is not None else database.get_tag_scale_from_database(tag_id)
     views = views if views is not None else database.get_tag_views_from_database(tag_id)
+
+    # Ensure numpy arrays -> tuples (JSON safe)
+    corners_np = np.asarray(raw_april_tag.corners, dtype=np.float32)
+    center_np = np.asarray(raw_april_tag.center, dtype=np.float32)
+
     corners = {
-        "top_left": tuple(raw_april_tag.corners[0]),
-        "top_right": tuple(raw_april_tag.corners[1]),
-        "bottom_right": tuple(raw_april_tag.corners[2]),
-        "bottom_left": tuple(raw_april_tag.corners[3]),
-            }
-    center = tuple(raw_april_tag.center)
-    displacement_d, displacement_z, displacement_x, displacement_y = calculate_displacement(camera_parameters, scale, center, corners )
-    if views is []:
-        raise ValueError("Views is none or is empty")
+        "top_left": tuple(corners_np[2]),
+        "top_right": tuple(corners_np[3]),
+        "bottom_right": tuple(corners_np[0]),
+        "bottom_left": tuple(corners_np[1]),
+    }
+    
+    center = tuple(center_np)
+
+    displacement_d, displacement_z, displacement_x, displacement_y = calculate_displacement(
+        camera_parameters, scale, center, corners
+    )
+    if not views:
+        raise ValueError("Views is None or empty")
+
     for view in views:
-        if (view["image_bound_upper"]<view["image_bound_lower"]):
+        if view["image_bound_upper"] < view["image_bound_lower"]:
             raise ValueError("image bounds in a view are switched")
+
     tag = {
-            "data": raw_april_tag.tag_id,
-            "tag_type": "referencetag",
-            "center": center,
-            "corners": corners,
-            "scale_units_m": scale,
-            "displacements": {
-                'd': displacement_d,
-                'z': displacement_z,
-                'x': displacement_x,
-                'y': displacement_y
-            },
-            "views": views
-        }
-    return tag   
-    '''"views": [{"plant_id":
-            "bias_units_m":
-            "image_bound_upper":
-            "image_bound_lower":
-            "color_bound_upper":
-            "color_bound_lower":
-            "request_type":}]'''
+        "data": tag_id,
+        "tag_type": "referencetag",
+        "center": center,
+        "corners": corners,
+        "scale_units_m": float(scale),
+        "displacements": {
+            "d": float(displacement_d),
+            "z": float(displacement_z),
+            "x": float(displacement_x),
+            "y": float(displacement_y),
+        },
+        "views": views,
+    }
+    return tag
+
 
 def add_height_estimation_info_to_tag(april_tag, camera_parameters):
     queried_info = database.get_tag_information_from_database(april_tag, camera_parameters)

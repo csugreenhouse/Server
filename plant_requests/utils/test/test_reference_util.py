@@ -3,7 +3,6 @@ from pathlib import Path
 import os
 import pytest
 from pytest import approx
-import apriltag
 import array
 import cv2
 # Make sure Python can import modules from the repo root no matter the CWD
@@ -46,11 +45,14 @@ def test_apritag_test01():
     tr = corners["top_right"]
     br = corners["bottom_right"]
     bl = corners["bottom_left"] 
+    
+    graph_util.plot_tags(image, dst, [tag_info])
+    
     assert tl == approx((267.1820373534919, 244.1751403808336),rel=1e-3,abs=0.5)
     assert tr == approx((393.2828063964598, 250.85649108888924),rel=1e-3,abs=0.5)
     assert br == approx((387.81927490236626, 374.93643188478995),rel=1e-3,abs=0.5)
     assert bl == approx((262.30166625978956, 369.2857971191188),rel=1e-3,abs=0.5)
-    
+
 def test_apritag_test02():
     src = IMG_DIR / "test_april_codes" /"TEST02.jpg"
     dst = IMG_DIR / "test_april_codes" /"TEST02_out.png"

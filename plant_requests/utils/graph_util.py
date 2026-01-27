@@ -40,6 +40,7 @@ def plot_estimated_heights_response(image, out_path, response):
     ax.axis('on')
     
     for i, view_response in enumerate(response):
+        add_tag(ax,view_response["reference_tag"], color=color_pallet[i%len(color_pallet)])
         color = color_pallet[i%len(color_pallet)]
         plant_id = view_response["plant_id"]
         estimated_height = view_response["estimated_height"]
@@ -48,7 +49,22 @@ def plot_estimated_heights_response(image, out_path, response):
         add_point(ax,view_response["heighest_green_pixel"],color="green")
         add_plant_bounds(ax,W,H,view_response["plant_bounds"],color=color)
         add_green_blobs(ax,green_blob_list,color)
-        ax.plot([], [], color=color, label=f"plant {plant_id}: {round(estimated_height*100,2)}cm")
+        ax.plot([], [], color=color, label=f"plant {plant_id}: {round(estimated_height*100,2)}cm FH {round(view_response['fractional_height']*100,2)}cm \n bias: {round(tag_bias*100,2)}cm")
+        
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
+
+    plt.savefig(str(out_path), bbox_inches="tight")
+    plt.close(fig)
+
+def plot_tags(image, out_path, tags):
+    graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    W,H = graph_rgb.shape[1], graph_rgb.shape[0]
+    fig, ax = plt.subplots()
+    ax.imshow(graph_rgb)
+    ax.axis('on')
+    
+    for i, tag in enumerate(tags):
+        add_tag(ax,tag,color=color_pallet[i%len(color_pallet)])
         
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
 
@@ -329,11 +345,17 @@ def add_tag(ax, tag, color='cyan', center_size=20):
     except KeyError:
         warnings.warn("Tag corners not found, cannot plot tag.")
         return
-    # add small text in center with tag data
+    # add small text in center with tag data also label the corners and say if its top left, top right, bottom right, bottom left
     ax.add_patch(plt.Polygon([tl, tr, br, bl], fill=None, edgecolor=color, linewidth=2))
     cx, cy = tag["center"]
     ax.add_patch(plt.Circle((cx, cy), center_size, color=color, fill=True))
     ax.text(tag["center"][0], tag["center"][1], str(tag["data"]), fontsize=8, ha='center', va='center')
+    ax.text(tl[0], tl[1], "TL", fontsize=8, ha='center', va='center')
+    ax.text(tr[0], tr[1], "TR", fontsize=8, ha='center', va='center')
+    ax.text(br[0], br[1], "BR", fontsize=8, ha='center', va='center')
+    ax.text(bl[0], bl[1], "BL", fontsize=8, ha='center', va='center')
+    # add to legend
+    ax.plot([], [], color=color, label=f'Tag ID: {tag["data"]}')
 
 def add_green_blobs(ax, plant_blob_list, color='lime'):
     for blob in plant_blob_list:
