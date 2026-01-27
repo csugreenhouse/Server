@@ -9,8 +9,6 @@ matplotlib>=3.9
 # AprilTag detection
 pupil-apriltags>=1.0.0  # most stable, widely used wrapper
 
-apriltag
-
 # QR & barcode scanning
 zxing-cpp>=2.2
 
