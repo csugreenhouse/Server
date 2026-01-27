@@ -7,7 +7,7 @@ matplotlib>=3.9
 
 
 # AprilTag detection
-apriltags
+apriltag
 #pupil-apriltags>=1.0.0  # most stable, widely used wrapper
 
 # QR & barcode scanning
