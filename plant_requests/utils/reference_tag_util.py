@@ -3,33 +3,16 @@ import numpy as np
 import warnings
 import sys
 sys.path.append('/srv/samba/Server')
-from pupil_apriltags import Detector as PupilAprilTagDetector
+import apriltag
 import plant_requests.utils.database_util as database
-
-_PUPIL_DETECTOR = None
-
-def _get_pupil_detector():
-    global _PUPIL_DETECTOR
-    if _PUPIL_DETECTOR is None:
-        _PUPIL_DETECTOR = PupilAprilTagDetector(
-            families="tag25h9",
-            nthreads=2,
-            quad_decimate=1.0,
-            quad_sigma=0.0,
-            refine_edges=1,
-            decode_sharpening=0.25,
-            debug=0,
-        )
-    return _PUPIL_DETECTOR
 
 
 def scan_raw_tags(image):
-    """Return raw pupil_apriltags detections."""
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    if gray.dtype != np.uint8:
-        gray = gray.astype(np.uint8)
-    detector = _get_pupil_detector()
-    return detector.detect(gray)
+    gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+    options = apriltag.DetectorOptions(families="tag25h9")
+    detector = apriltag.Detector(options)
+    results = detector.detect(gray)
+    return results
 
 def scan_apriltags(image):
     """
@@ -40,22 +23,21 @@ def scan_apriltags(image):
     DECISION_MARGIN = 40.0
     valid_tags = []
 
-    for det in results:
-        # pupil_apriltags: det.tag_id, det.decision_margin, det.center, det.corners
-        if float(det.decision_margin) > DECISION_MARGIN:
-            corners = np.asarray(det.corners, dtype=np.float32)
-
+    for tag in results:
+        #print(f"TAG ID {tag.tag_id} with decision margin {tag.decision_margin}")
+        if (tag.decision_margin>DECISION_MARGIN):
+            # color_bounds, scale_units_m, bias_units_m = parse_qr_data(str(tag.tag_id))
             # Expected order is typically TL, TR, BR, BL (matches your current indexing)
             tag = {
-                "data": int(det.tag_id),
+                "data": int(tag.tag_id),
                 "tag_type": "apriltag",
-                "center": tuple(np.asarray(det.center, dtype=np.float32)),
+                "center": tuple(np.asarray(tag.center, dtype=np.float32)),
                 "corners": {
                     # RELATIVE TO THE IMAGE, Y INCREASES DOWNWARDS, THUS SWITCH THE ORDER
-                    "top_left": tuple(corners[3]),
-                    "top_right": tuple(corners[2]),
-                    "bottom_right": tuple(corners[1]),
-                    "bottom_left": tuple(corners[0]),
+                    "top_left": tuple(tag.corners[0]),
+                    "top_right": tuple(tag.corners[1]),
+                    "bottom_right": tuple(tag.corners[2]),
+                    "bottom_left": tuple(tag.corners[3]),
                 },
             }
             valid_tags.append(tag)
@@ -101,10 +83,10 @@ def make_reference_tag(raw_april_tag, camera_parameters, scale=None, views=None)
     center_np = np.asarray(raw_april_tag.center, dtype=np.float32)
 
     corners = {
-        "top_left": tuple(corners_np[2]),
-        "top_right": tuple(corners_np[3]),
-        "bottom_right": tuple(corners_np[0]),
-        "bottom_left": tuple(corners_np[1]),
+        "top_left": tuple(corners_np[0]),
+        "top_right": tuple(corners_np[1]),
+        "bottom_right": tuple(corners_np[2]),
+        "bottom_left": tuple(corners_np[3]),
     }
     
     center = tuple(center_np)

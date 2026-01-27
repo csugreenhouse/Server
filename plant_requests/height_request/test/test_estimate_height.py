@@ -15,6 +15,7 @@ IMG_DIR = BASE_DIR / "images" / "test_estimate_height"
 hr = importlib.import_module("plant_requests.height_request.height_request")
 graph_util = importlib.import_module("plant_requests.utils.graph_util")
 reference_util = importlib.import_module("plant_requests.utils.reference_tag_util")
+
 plastic_color_bounds = ((30, 60, 30),(90, 255, 200))
 lettuce_color_bounds = ((30, 35, 30),(75, 255, 255))
 
