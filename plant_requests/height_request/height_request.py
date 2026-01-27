@@ -1,4 +1,3 @@
-import apriltag
 import argparse
 import cv2
 import matplotlib.pyplot as plt
