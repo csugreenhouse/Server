@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import warnings
 import numpy as np
 import matplotlib.patches as patches
+from matplotlib.lines import Line2D
 from plant_requests.utils.line_util import get_equation_of_line, get_vertical_line, fractional_height_between_lines, get_intercept_of_lines
 
 color_pallet = ['cyan', 'yellow', 'magenta', 'orange', 'pink', 'lime', 'aqua']
@@ -35,6 +36,8 @@ def plot_estimated_heights_response(image, out_path, response):
     graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     W,H = graph_rgb.shape[1], graph_rgb.shape[0]
     fig, ax = plt.subplots()
+    ax.imshow(graph_rgb)
+    ax.axis('on')
     
     for i, view_response in enumerate(response):
         color = color_pallet[i%len(color_pallet)]
@@ -48,9 +51,7 @@ def plot_estimated_heights_response(image, out_path, response):
         ax.plot([], [], color=color, label=f"plant {plant_id}: {round(estimated_height*100,2)}cm")
         
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
-    
-    ax.imshow(graph_rgb)
-    ax.axis('on')
+
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
     
@@ -279,16 +280,26 @@ def add_camera_view_frustum(ax, heighest_green_pixel,camera_parameters, referenc
     ax.plot([], [], color=color, label='Camera View to Heighest Plant Pixel \n (May indicate occlusion or steep angle)')
     
 def add_plant_bounds(ax,W,H,plant_bounds,color):
-    x = plant_bounds[0]*W
-    width_rectangle = (plant_bounds[1]-plant_bounds[0])*W
+    x_lower = plant_bounds[0]*W
+    x_upper = plant_bounds[1]*W
+    
+    width = x_upper-x_lower
+    
     rect = patches.Rectangle(
-        (x,0),
-        width_rectangle,
+        (x_lower,0),
+        width,
         H,
         alpha=0.1,
         facecolor=color
     )
     ax.add_patch(rect)
+    
+    x_lower_line = get_vertical_line(x_lower)
+    x_upper_line = get_vertical_line(x_upper)
+    
+    add_line(ax, x_lower_line, color=color, linestyle='-.')
+    add_line(ax, x_upper_line, color=color, linestyle='-.')
+    
     
 
 def add_view(ax,W,H,view,facecolor='cyan'):
@@ -366,9 +377,8 @@ def add_line(ax, equation, color='yellow', linestyle='--', label=None):
         x_line = x_vals
         y_line = y_vals
     ax.plot(x_line, y_line, color=color, linestyle=linestyle, label=label)
-
    
-
+    
 
 
     

@@ -15,8 +15,7 @@ IMG_DIR = BASE_DIR / "images" / "test_estimate_height"
 hr = importlib.import_module("plant_requests.height_request.height_request")
 graph_util = importlib.import_module("plant_requests.utils.graph_util")
 reference_util = importlib.import_module("plant_requests.utils.reference_tag_util")
-
-plastic_color_bounds = ((30, 10, 30),(70, 255, 200))
+plastic_color_bounds = ((30, 60, 30),(90, 255, 200))
 lettuce_color_bounds = ((30, 35, 30),(75, 255, 255))
 
 test_scale = .07
@@ -99,6 +98,37 @@ def test_estimate_height_16CM():
     
 
     assert estimated_height == pytest.approx(.16, rel=.20)
+    
+
+def test_estimate_multiple_heights():
+    src = IMG_DIR / "test_multiple.jpg"
+    dst = IMG_DIR / "test_multiple_out.png"
+    image = cv2.imread(str(src))
+    
+    view_one = reference_util.make_height_view(
+        plant_id=1,
+        image_bounds =(.05,.45),
+        color_bounds = plastic_color_bounds,
+        bias_units_m = 0,
+    )
+    
+    view_two = reference_util.make_height_view(
+        plant_id=2,
+        image_bounds =(0.50,.95),
+        color_bounds = plastic_color_bounds,
+        bias_units_m = 0,
+    )
+    
+    views = [view_one, view_two]
+    
+    raw_april_tag = reference_util.scan_raw_tags(image)[0]
+    reference_tag = reference_util.make_reference_tag(raw_april_tag,test_camera_parameters,scale=test_scale,views=views)
+    estimated_heights_response =  hr.estimate_heights_reference_tags(image, [reference_tag])
+    
+    graph_util.plot_estimated_heights_response(image, dst, estimated_heights_response)
+    
+    
+    
 
 
 
