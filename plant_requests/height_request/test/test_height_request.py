@@ -28,31 +28,37 @@ test_camera_parameters = {
     "ip_address": "192.168.0.11"
     }
 
-"""
-def make_reference_tag(april_tag, scale_units_m, color_bounds, bias_units_m, plant_bounds):
-    reference_tag = april_tag
-    reference_tag["scale_units_m"] = scale_units_m
-    reference_tag["color_bounds"] = color_bounds    
-    reference_tag["bias_units_m"] = bias_units_m
-    reference_tag["plant_bounds"] = plant_bounds
-    reference_tag = reference_util.add_calculated_displacement_info_to_tag(
-        test_camera_parameters,reference_tag)
-    return reference_tag
-
 def test_height_request_01():
     src = IMG_DIR / "test_height_request_00.jpg"
     dst = IMG_DIR / "test_height_request_00_out.png"
     image = cv2.imread(str(src))
+
+    color_bounds = plastic_color_bounds
+    plant_bounds_1 = (.2, .5)
+    plant_bounds_2 = (.5, .8)
+    plant_id_1 = 1
+    plant_id_2 = 2
+    bias_1 = .01
+    bias_2 = .01
+    views_1 = [
+        scanner_util.make_height_view(plant_id_1,plant_bounds_1,color_bounds,bias_1)
+    ]
+    views_2 = [
+        scanner_util.make_height_view(plant_id_2,plant_bounds_2,color_bounds,bias_2)
+    ]
     
-    april_tags = scanner_util.scan_apriltags(image)
-    april_1 = april_tags[0]
-    april_2 = april_tags[1]
-    reference_tag_1 = make_reference_tag(april_1,.07,plastic_color_bounds,.01,(.55,.8))
-    reference_tag_2 = make_reference_tag(april_2,.07,plastic_color_bounds,.01,(.2,.5))
+    
+    raw_tags = scanner_util.scan_raw_tags(image)
+    raw_tag_1 = raw_tags[0]
+    raw_tag_2 = raw_tags[1]
+
+
+    reference_tag_1 = scanner_util.make_reference_tag(raw_tag_1,test_camera_parameters,scale=.07,views=views_1)
+    reference_tag_2 = scanner_util.make_reference_tag(raw_tag_2,test_camera_parameters,scale=.07,views=views_2)
     
     reference_tags = [reference_tag_1, reference_tag_2]
 
-    estimated_heights, estimated_heights_info = hr.height_request(image, reference_tags, test_camera_parameters)
-    
-    graph_util.plot_height_request_graph_info(image, dst, estimated_heights_info)
-"""
+    response = hr.height_request(image, reference_tags, test_camera_parameters)
+
+    assert response[0]["estimated_height"] == pytest.approx(.34, rel=.1)
+    assert response[1]["estimated_height"] == pytest.approx(.26, rel=.1)
