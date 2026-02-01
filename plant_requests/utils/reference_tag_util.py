@@ -4,7 +4,6 @@ import warnings
 import sys
 sys.path.append('/srv/samba/Server')
 import apriltag
-import plant_requests.utils.database_util as database
 
 
 def scan_raw_tags(image):

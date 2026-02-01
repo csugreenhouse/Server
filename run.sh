@@ -1,14 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-#initialize test database
-bash "$(dirname"$0")run/initialize_test_db.sh"
-
-
 # Move to the directory containing this script (repo root)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-pytest
+# initialize test database
+bash "$SCRIPT_DIR/run/initialize_test_db.sh"
 
-echo "All tests passed"
+if pytest -s
+then
+  echo "All tests passed"
+  exit 0
+fi
+
+# reset test database
+bash "$SCRIPT_DIR/run/reset_test_db.sh"
+
+echo "✅ test database reset after tests"
+
+pytest -s 

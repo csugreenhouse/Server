@@ -8,7 +8,6 @@ import sys
 sys.path.append('/srv/samba/Server/plant_requests')
 import numpy as np
 import plant_requests.utils.reference_tag_util as reference_tag_util
-import plant_requests.utils.database_util as database_util
 import plant_requests.utils.line_util as line_util
 import plant_requests.utils.image_util as image_util
 import plant_requests.utils.reference_tag_util as reference_util

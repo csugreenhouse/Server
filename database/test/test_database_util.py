@@ -95,18 +95,67 @@ def test_get_tag_information_from_database():
     """
     
     conn = psycopg2.connect(
-    dbname="test_greenhouse",
+        dbname="test_greenhouse",
         user="greenhouse_test_user",
         password="greenhouse_test_pass",
-        host="localhost",
+        host="localhost", 
         port=5432,
-    )
-    
-    database_util = importlib.import_module("database.database_util")
-    
-    tag_id = 4  # Known tag_id in the test database
+    )   
+    try:
+        from database import database_util
 
-    result = database_util.get_tag_information_from_database(conn, tag_id)
+        tag_id_to_test = 4  # Known tag_id in the test database
+        result = database_util.get_tag_information_from_database(conn, tag_id_to_test)
+
+    finally:
+        conn.close()
     
-    assert result is not None
-    assert len(result) == 1  # Expecting one record for tag_id 4
+    view_one = result[0]
+    view_two = result[1]
+    
+    #tag id 
+    assert view_one[0] == 4  
+    assert view_two[0] == 4  
+    
+    #scale_units_m
+    assert float(view_one[1]) == float(0.70)
+    assert float(view_two[1]) == float(0.70)
+    
+    
+    #plant_id
+    assert view_one[3] == 1  
+    assert view_two[3] == 2
+    
+    #image_bound_upper
+    assert view_one[4] == 1.0  
+    assert view_two[4] == 0.5
+    
+    #image_bound_lower
+    assert view_one[5] == 0.5  
+    assert view_two[5] == 0.0
+    
+    #color bounds
+    
+    179, 255, 255,
+    150, 50, 50
+    
+    assert view_one[7] == 179
+    assert view_one[8] == 255
+    assert view_one[9] == 255  
+    assert view_one[10] == 150
+    assert view_one[11] == 50  
+    assert view_one[12] == 50  
+    
+    assert view_two[7] == 179  
+    assert view_two[8] == 255
+    assert view_two[9] == 255
+    assert view_two[10] == 150
+    assert view_two[11] == 50  
+    assert view_two[12] == 50
+    
+    assert view_one[6] == 'height'
+    assert view_two[6] == 'height'
+    
+    assert view_one[13] == 0.0
+    assert view_two[13] == 0.0
+    

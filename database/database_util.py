@@ -57,6 +57,20 @@ import psycopg2
 import os
 import json
 
+def open_connection_to_test_database():
+    try:
+        conn = psycopg2.connect(
+            dbname="test_greenhouse",
+            user="greenhouse_test_user",
+            password="greenhouse_test_pass",
+            host="localhost",
+            port=5432,
+        )
+        return conn
+    except Exception as e:
+        print(f"Test database connection error: {e}")
+        return None
+
 def open_connection_to_database():
     with open("/srv/samba/Server/plant_requests/utils/secrets_util.json") as f:
         secrets = json.load(f)["database_util"]
@@ -75,15 +89,43 @@ def open_connection_to_database():
 def close_connection_to_database(conn):
     if conn:
         conn.close() 
-        
+
 def get_tag_information_from_database(conn,tag_id):
-    tag_query_results = execute_query(conn,f"select * from tag where tag_id = {tag_id}")
+    query = (
+        "SELECT "
+        "  t.tag_id, "
+        "  t.scale_units_m, "
+        "  v.view_id, "
+        "  v.plant_id, "
+        "  v.image_bound_upper, "
+        "  v.image_bound_lower, "
+        "  v.view_type, "
+        "  s.upper_color_bound_hue, "
+        "  s.upper_color_bound_saturation, "
+        "  s.upper_color_bound_value, "
+        "  s.lower_color_bound_hue, "
+        "  s.lower_color_bound_saturation, "
+        "  s.lower_color_bound_value, "
+        "  hv.bias_units_m, "
+        "  wv.* "
+        "FROM tag t "
+        "JOIN \"view\" v ON v.tag_id = t.tag_id "
+        "JOIN plant p ON p.plant_id = v.plant_id "
+        "JOIN species s ON s.species_id = p.species_id "
+        "LEFT JOIN height_view hv ON hv.view_id = v.view_id "
+        "LEFT JOIN width_view wv ON wv.view_id = v.view_id "
+        "WHERE t.tag_id = %s "
+        "ORDER BY v.view_id;"
+    )
+
+    tag_query_results = execute_query(conn,query,(tag_id,))
+    
     return tag_query_results
 
-def execute_query(conn,query):
+def execute_query(conn,query,params=None):
     try:
         cur = conn.cursor()
-        cur.execute(query)
+        cur.execute(query,params)
         if cur.description is not None:
             results = cur.fetchall()
         else:
@@ -94,7 +136,7 @@ def execute_query(conn,query):
     except Exception as e:
         print(f"Database error: {e}")
     finally:
-        print("Query executed")
+        pass
 
 """
 def can_connect_to_database():

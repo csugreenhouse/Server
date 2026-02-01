@@ -14,10 +14,10 @@
 DROP TABLE IF EXISTS height_view CASCADE;
 DROP TABLE IF EXISTS width_view CASCADE;
 DROP TABLE IF EXISTS plant_view CASCADE;
+DROP TABLE IF EXISTS view CASCADE;
 DROP TABLE IF EXISTS tag CASCADE;
 DROP TABLE IF EXISTS plant CASCADE;
 DROP TABLE IF EXISTS species CASCADE;
-
 DROP TYPE IF EXISTS view_type_enum CASCADE;
 
 
@@ -53,22 +53,22 @@ CREATE TABLE tag (
 );
 
 -- Renamed from "view" to avoid keyword friction
-CREATE TABLE plant_view (
+CREATE TABLE view (
   view_id BIGSERIAL PRIMARY KEY,
   tag_id INT REFERENCES tag(tag_id) ON DELETE CASCADE,
   plant_id INT REFERENCES plant(plant_id) ON DELETE CASCADE,
-  view_type view_type_enum NOT NULL
+  view_type view_type_enum NOT NULL,
+  image_bound_upper DECIMAL NOT NULL,
+  image_bound_lower DECIMAL NOT NULL
 );
 
 CREATE TABLE height_view (
-  view_id BIGINT PRIMARY KEY REFERENCES plant_view(view_id) ON DELETE CASCADE,
-  image_bound_upper DECIMAL NOT NULL,
-  image_bound_lower DECIMAL NOT NULL,
+  view_id BIGINT PRIMARY KEY REFERENCES view(view_id) ON DELETE CASCADE,
   bias_units_m DECIMAL NOT NULL
 );
 
 CREATE TABLE width_view (
-  view_id BIGINT PRIMARY KEY REFERENCES plant_view(view_id) ON DELETE CASCADE
+  view_id BIGINT PRIMARY KEY REFERENCES view(view_id) ON DELETE CASCADE
 );
 
 
@@ -123,29 +123,30 @@ INSERT INTO tag (tag_id, scale_units_m) VALUES
 (3, 0.70),
 (4, 0.70);
 
-INSERT INTO plant_view (tag_id, plant_id, view_type) VALUES
+INSERT INTO view (tag_id, plant_id, view_type, image_bound_upper, image_bound_lower) VALUES
 -- Tag 4 → Truchas (plants 1,2)
-(4, 1, 'height'),
-(4, 2, 'height'),
+(4, 1, 'height', 1.0, 0.5),
+(4, 2, 'height', 0.5, 0.0),
 
 -- Tag 3 → Basil (plants 3,4)
-(3, 3, 'height'),
-(3, 4, 'height'),
+(3, 3, 'height', 1.0, 0.5),
+(3, 4, 'height', 0.5, 0.0),
 
 -- Tag 2 → Little Gem (plants 5,6)
-(2, 5, 'height'),
-(2, 6, 'height');
+(2, 5, 'height', 1.0, 0.5),
+(2, 6, 'height', 0.5, 0.0),
 
-INSERT INTO height_view (view_id, image_bound_upper, image_bound_lower, bias_units_m)
-SELECT
-    pv.view_id,
-    CASE WHEN (pv.plant_id % 2) = 1 THEN 1.0 ELSE 0.5 END AS image_bound_upper,
-    CASE WHEN (pv.plant_id % 2) = 1 THEN 0.5 ELSE 0.0 END AS image_bound_lower,
-    0.0 AS bias_units_m
-FROM plant_view pv
-WHERE pv.view_type = 'height';
+-- Tag 1 → Truchas (plants 1,2)
+(1, 1, 'height', 1.0, 0.5),
+(1, 2, 'height', 0.5, 0.0);
 
-CREATE USER greenhouse_test_user WITH PASSWORD 'greenhouse_test_pass';
-GRANT ALL PRIVILEGES ON DATABASE test_greenhouse TO greenhouse_test_user;
+INSERT INTO height_view (view_id, bias_units_m) VALUES
+(1, 0.0),
+(2, 0.0),
+(3, 0.0),
+(4, 0.0),
+(5, 0.0),
+(6, 0.0),
+(7, 0.0),
+(8, 0.0);
 
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO greenhouse_test_user;
