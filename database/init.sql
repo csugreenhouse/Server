@@ -1,0 +1,151 @@
+-- =========================
+-- 0) (Optional) Database
+-- =========================
+-- NOTE: CREATE DATABASE cannot run inside a transaction block and is usually run separately.
+-- CREATE DATABASE test_greenhouse;
+
+-- After creating it, connect:
+-- \c test_greenhouse
+
+
+-- =========================
+-- 1) Drop existing objects
+-- =========================
+DROP TABLE IF EXISTS height_view CASCADE;
+DROP TABLE IF EXISTS width_view CASCADE;
+DROP TABLE IF EXISTS plant_view CASCADE;
+DROP TABLE IF EXISTS tag CASCADE;
+DROP TABLE IF EXISTS plant CASCADE;
+DROP TABLE IF EXISTS species CASCADE;
+
+DROP TYPE IF EXISTS view_type_enum CASCADE;
+
+
+-- =========================
+-- 2) Types
+-- =========================
+CREATE TYPE view_type_enum AS ENUM ('height', 'width');
+
+
+-- =========================
+-- 3) Tables
+-- =========================
+CREATE TABLE species (
+  species_id SERIAL PRIMARY KEY,
+  scientific_name VARCHAR(128) NOT NULL UNIQUE,
+  common_name VARCHAR(128),
+  upper_color_bound_hue INT NOT NULL,
+  upper_color_bound_saturation INT NOT NULL,
+  upper_color_bound_value INT NOT NULL,
+  lower_color_bound_hue INT NOT NULL,
+  lower_color_bound_saturation INT NOT NULL,
+  lower_color_bound_value INT NOT NULL
+);
+
+CREATE TABLE plant (
+  plant_id SERIAL PRIMARY KEY,
+  species_id INT NOT NULL REFERENCES species(species_id) ON DELETE RESTRICT
+);
+
+CREATE TABLE tag (
+  tag_id INT PRIMARY KEY,
+  scale_units_m DECIMAL DEFAULT 0.70
+);
+
+-- Renamed from "view" to avoid keyword friction
+CREATE TABLE plant_view (
+  view_id BIGSERIAL PRIMARY KEY,
+  tag_id INT REFERENCES tag(tag_id) ON DELETE CASCADE,
+  plant_id INT REFERENCES plant(plant_id) ON DELETE CASCADE,
+  view_type view_type_enum NOT NULL
+);
+
+CREATE TABLE height_view (
+  view_id BIGINT PRIMARY KEY REFERENCES plant_view(view_id) ON DELETE CASCADE,
+  image_bound_upper DECIMAL NOT NULL,
+  image_bound_lower DECIMAL NOT NULL,
+  bias_units_m DECIMAL NOT NULL
+);
+
+CREATE TABLE width_view (
+  view_id BIGINT PRIMARY KEY REFERENCES plant_view(view_id) ON DELETE CASCADE
+);
+
+
+-- =========================
+-- 4) Seed data
+-- =========================
+INSERT INTO species (
+  scientific_name,
+  common_name,
+  upper_color_bound_hue,
+  upper_color_bound_saturation,
+  upper_color_bound_value,
+  lower_color_bound_hue,
+  lower_color_bound_saturation,
+  lower_color_bound_value
+) VALUES
+(
+  'Lactuca sativa (Truchas)',
+  'Red Lettuce (Truchas)',
+  179, 255, 255,
+  150, 50, 50
+),
+(
+  'Lactuca sativa (Little Gem)',
+  'Mini Romaine Lettuce (Little Gem)',
+  80, 255, 255,
+  35, 40, 40
+),
+(
+  'Ocimum basilicum',
+  'Basil (Italian Genovese)',
+  90, 255, 255,
+  30, 60, 60
+);
+
+INSERT INTO plant (plant_id,species_id) VALUES
+-- Truchas (Red Lettuce)
+(1,1),
+(2,1),
+
+-- Basil
+(3,3),
+(4,3),
+
+-- Little Gem
+(5,2),
+(6,2);
+
+INSERT INTO tag (tag_id, scale_units_m) VALUES
+(1, 0.70),
+(2, 0.70),
+(3, 0.70),
+(4, 0.70);
+
+INSERT INTO plant_view (tag_id, plant_id, view_type) VALUES
+-- Tag 4 → Truchas (plants 1,2)
+(4, 1, 'height'),
+(4, 2, 'height'),
+
+-- Tag 3 → Basil (plants 3,4)
+(3, 3, 'height'),
+(3, 4, 'height'),
+
+-- Tag 2 → Little Gem (plants 5,6)
+(2, 5, 'height'),
+(2, 6, 'height');
+
+INSERT INTO height_view (view_id, image_bound_upper, image_bound_lower, bias_units_m)
+SELECT
+    pv.view_id,
+    CASE WHEN (pv.plant_id % 2) = 1 THEN 1.0 ELSE 0.5 END AS image_bound_upper,
+    CASE WHEN (pv.plant_id % 2) = 1 THEN 0.5 ELSE 0.0 END AS image_bound_lower,
+    0.0 AS bias_units_m
+FROM plant_view pv
+WHERE pv.view_type = 'height';
+
+CREATE USER greenhouse_test_user WITH PASSWORD 'greenhouse_test_pass';
+GRANT ALL PRIVILEGES ON DATABASE test_greenhouse TO greenhouse_test_user;
+
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO greenhouse_test_user;
