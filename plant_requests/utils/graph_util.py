@@ -91,6 +91,29 @@ def plot_heighest_green_pixel_response(image, out_path, response):
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
     
+def plot_height_request_response(image, out_path, response):
+    graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    W,H = graph_rgb.shape[1], graph_rgb.shape[0]
+    fig, ax = plt.subplots()
+    
+    for i, view_response in enumerate(response):
+        add_tag(ax,view_response["reference_tag"], color=color_pallet[i%len(color_pallet)])
+        color = color_pallet[i%len(color_pallet)]
+        plant_id = view_response["plant_id"]
+        estimated_height = view_response["estimated_height"]
+        green_blob_list = view_response["green_blob_list"]
+        tag_bias = view_response["bias_units_m"]
+        add_point(ax,view_response["heighest_green_pixel"],color="green")
+        add_plant_bounds(ax,W,H,view_response["plant_bounds"],color=color)
+        add_green_blobs(ax,green_blob_list,color)
+        ax.plot([], [], color=color, label=f"plant {plant_id}: {round(estimated_height*100,2)}cm FH {round(view_response['fractional_height']*100,2)}cm \n bias: {round(tag_bias*100,2)}cm")
+    
+    ax.imshow(graph_rgb)
+    ax.axis('on')
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
+    plt.savefig(str(out_path), bbox_inches="tight")
+    plt.close(fig)
+    
     
 # Plot the response from width_request
 
@@ -365,6 +388,8 @@ def add_green_blobs(ax, plant_blob_list, color='lime'):
             ax.plot(contour[:, 0], contour[:, 1], color=color, linewidth=2)
 
 def add_point(ax, point, color='blue', size=10):
+    if point == None:
+        return
     x, y = point
     ax.add_patch(plt.Circle((x, y), size, color=color, fill=True))
 

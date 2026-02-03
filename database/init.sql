@@ -118,27 +118,28 @@ INSERT INTO plant (plant_id,species_id) VALUES
 (6,2);
 
 INSERT INTO tag (tag_id, scale_units_m) VALUES
-(1, 0.70),
-(2, 0.70),
-(3, 0.70),
-(4, 0.70);
+-- 7 cm is equal to .07m
+(1, 0.07),
+(2, 0.07),
+(3, 0.07),
+(4, 0.07);
 
 INSERT INTO view (tag_id, plant_id, view_type, image_bound_upper, image_bound_lower) VALUES
 -- Tag 4 → Truchas (plants 1,2)
-(4, 1, 'height', 1.0, 0.5),
-(4, 2, 'height', 0.5, 0.0),
+(4, 1, 'height', 0.5, 0.0),
+(4, 2, 'height', 1.0, 0.5),
 
 -- Tag 3 → Basil (plants 3,4)
 (3, 3, 'height', 1.0, 0.5),
 (3, 4, 'height', 0.5, 0.0),
 
 -- Tag 2 → Little Gem (plants 5,6)
-(2, 5, 'height', 1.0, 0.5),
-(2, 6, 'height', 0.5, 0.0),
+(2, 5, 'height', 0.5, 0.0),
+(2, 6, 'height', 1.0, .50),
 
 -- Tag 1 → Truchas (plants 1,2)
 (1, 1, 'height', 1.0, 0.5),
-(1, 2, 'height', 0.5, 0.0);
+(1, 2, 'height', 1.0, 0.0);
 
 INSERT INTO height_view (view_id, bias_units_m) VALUES
 (1, 0.0),

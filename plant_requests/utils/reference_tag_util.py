@@ -5,6 +5,8 @@ import sys
 sys.path.append('/srv/samba/Server')
 import apriltag
 
+import database.database_util as database_util
+
 
 def scan_raw_tags(image):
     gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
@@ -12,6 +14,21 @@ def scan_raw_tags(image):
     detector = apriltag.Detector(options)
     results = detector.detect(gray)
     return results
+
+def sort_corners(corners):
+    """
+    Sort corners in the order: top_left, top_right, bottom_right, bottom_left
+    """
+    corners = np.array(corners)
+    s = corners.sum(axis=1)
+    diff = np.diff(corners, axis=1)
+
+    top_left = corners[np.argmin(s)]
+    bottom_right = corners[np.argmax(s)]
+    top_right = corners[np.argmin(diff)]
+    bottom_left = corners[np.argmax(diff)]
+
+    return [top_left, top_right, bottom_right, bottom_left]
 
 def scan_apriltags(image):
     """
@@ -21,8 +38,10 @@ def scan_apriltags(image):
 
     DECISION_MARGIN = 40.0
     valid_tags = []
+    
 
     for tag in results:
+        corners_sorted = sort_corners(tag.corners)
         #print(f"TAG ID {tag.tag_id} with decision margin {tag.decision_margin}")
         if (tag.decision_margin>DECISION_MARGIN):
             # color_bounds, scale_units_m, bias_units_m = parse_qr_data(str(tag.tag_id))
@@ -33,10 +52,10 @@ def scan_apriltags(image):
                 "center": tuple(np.asarray(tag.center, dtype=np.float32)),
                 "corners": {
                     # RELATIVE TO THE IMAGE, Y INCREASES DOWNWARDS, THUS SWITCH THE ORDER
-                    "top_left": tuple(tag.corners[0]),
-                    "top_right": tuple(tag.corners[1]),
-                    "bottom_right": tuple(tag.corners[2]),
-                    "bottom_left": tuple(tag.corners[3]),
+                    "top_left": tuple(corners_sorted[0]),
+                    "top_right": tuple(corners_sorted[1]),
+                    "bottom_right": tuple(corners_sorted[2]),
+                    "bottom_left": tuple(corners_sorted[3]),
                 },
             }
             valid_tags.append(tag)
@@ -73,19 +92,24 @@ def make_reference_tag(raw_april_tag, camera_parameters, scale=None, views=None)
     # pupil_apriltags detection fields:
     #   raw_april_tag.tag_id, raw_april_tag.corners, raw_april_tag.center
     tag_id = int(raw_april_tag.tag_id)
-
-    scale = scale if scale is not None else database.get_tag_scale_from_database(tag_id)
-    views = views if views is not None else database.get_tag_views_from_database(tag_id)
+    
+    if scale is None or views is None:
+        conn = database_util.open_connection_to_test_database()
+        scale = scale if scale is not None else database_util.get_tag_scale_from_database(conn, tag_id)
+        views = views if views is not None else database_util.get_tag_views_from_database(conn, tag_id)
+        database_util.close_connection_to_database(conn)
 
     # Ensure numpy arrays -> tuples (JSON safe)
     corners_np = np.asarray(raw_april_tag.corners, dtype=np.float32)
     center_np = np.asarray(raw_april_tag.center, dtype=np.float32)
-
+    
+    corners_sorted = sort_corners(corners_np)
+    
     corners = {
-        "top_left": tuple(corners_np[0]),
-        "top_right": tuple(corners_np[1]),
-        "bottom_right": tuple(corners_np[2]),
-        "bottom_left": tuple(corners_np[3]),
+        "top_left": tuple(corners_sorted[0]),
+        "top_right": tuple(corners_sorted[1]),
+        "bottom_right": tuple(corners_sorted[2]),
+        "bottom_left": tuple(corners_sorted[3]),
     }
     
     center = tuple(center_np)
@@ -171,5 +195,4 @@ def make_height_view(plant_id, image_bounds, color_bounds, bias_units_m):
             "image_bound_lower": image_bounds[0],
             "color_bound_upper": color_bounds[1],
             "color_bound_lower": color_bounds[0],
-            "request_type":'height',
-            }
+    }
