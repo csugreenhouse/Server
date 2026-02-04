@@ -18,6 +18,11 @@ def get_vertical_line(x_coordinate):
     intercept = x_coordinate
     return slope, intercept
 
+def get_horizontal_line(y_coordinate):
+    slope = 0
+    intercept = y_coordinate
+    return slope, intercept
+
 def get_equation_of_line(point1, point2):
     x1, y1 = point1
     x2, y2 = point2
@@ -40,3 +45,24 @@ def fractional_height_between_lines(equation_top, equation_bottom, coordinate):
     
     fractional_height = 1 - (y - y_top) / (y_bottom - y_top)
     return fractional_height  
+
+def fractional_width_between_lines(equation_left, equation_right, coordinate):
+    slope_l, intercept_l = equation_left
+    slope_r, intercept_r = equation_right
+    x, y = coordinate
+    
+    if slope_l == float('inf'):
+        x_left = intercept_l
+    else:
+        x_left = (y - intercept_l) / slope_l
+        
+    if slope_r == float('inf'):
+        x_right = intercept_r
+    else:
+        x_right = (y - intercept_r) / slope_r
+    
+    if x_right - x_left == 0:
+        raise ValueError("Left and right lines are the same - cannot compute fractional width")
+    
+    fractional_width = (x - x_left) / (x_right - x_left)
+    return fractional_width
