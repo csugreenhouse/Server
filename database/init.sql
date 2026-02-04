@@ -42,6 +42,16 @@ CREATE TABLE species (
   lower_color_bound_value INT NOT NULL
 );
 
+CREATE TABLE camera (
+  camera_id SERIAL PRIMARY KEY,
+  ip_address VARCHAR(64) NOT NULL UNIQUE,
+  width INT NOT NULL DEFAULT 1024,
+  height INT NOT NULL DEFAULT 768,
+  focal_length_mm DECIMAL NOT NULL DEFAULT 3.6,
+  sensor_height_mm DECIMAL NOT NULL DEFAULT 2.2684,
+  sensor_width_mm DECIMAL NOT NULL DEFAULT 3.590
+);
+
 CREATE TABLE plant (
   plant_id SERIAL PRIMARY KEY,
   species_id INT NOT NULL REFERENCES species(species_id) ON DELETE RESTRICT
@@ -124,6 +134,8 @@ INSERT INTO tag (tag_id, scale_units_m) VALUES
 (3, 0.07),
 (4, 0.07);
 
+
+
 INSERT INTO view (tag_id, plant_id, view_type, image_bound_upper, image_bound_lower) VALUES
 -- Tag 4 → Truchas (plants 1,2)
 (4, 1, 'height', 0.5, 0.0),
@@ -150,4 +162,3 @@ INSERT INTO height_view (view_id, bias_units_m) VALUES
 (6, 0.0),
 (7, 0.0),
 (8, 0.0);
-

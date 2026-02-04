@@ -8,6 +8,35 @@ import psycopg2
 import os
 import json
 
+def get_available_camera_parameters_from_database(conn):
+    query = (
+        "SELECT "
+        "  camera_id, "
+        "  width, "
+        "  height, "
+        "  focal_length_mm, "
+        "  sensor_height_mm, "
+        "  sensor_width_mm, "
+        "  ip_address "
+        "FROM camera;"
+    )
+    
+    results = execute_query(conn, query)
+    camera_parameter_list = []
+    for row in results:
+        camera_parameter = {
+            "camera_id": row[0],
+            "width": row[1],
+            "height": row[2],
+            "focal_length_mm": float(row[3]),
+            "sensor_height_mm": float(row[4]),
+            "sensor_width_mm": float(row[5]),
+            "ip_address": row[6]
+        }
+        camera_parameter_list.append(camera_parameter)
+
+    return camera_parameter_list
+
 def open_connection_to_test_database():
     try:
         conn = psycopg2.connect(

@@ -27,7 +27,7 @@ def scan_green_blobs(image,
     k_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, close_kernel_size)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, k_open)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k_close)
-    numb_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask, connectivity=8)
+    numb_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask, connectivity=4)
     plant_blob_list = []
     for label in range(1, numb_labels):
         area = stats[label, cv2.CC_STAT_AREA]
