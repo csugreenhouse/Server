@@ -46,6 +46,7 @@ def test_estimate_height_6CM():
     plant_id = 1
     bias = .01
     
+    
     views = [reference_util.make_height_view(plant_id,plant_bounds,color_bounds,bias)]
     raw_april_tag = reference_util.scan_raw_tags(image)[0]
     reference_tag = reference_util.make_reference_tag(raw_april_tag,test_camera_parameters,scale=test_scale,views=views)

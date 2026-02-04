@@ -73,9 +73,11 @@ def test_heighest_green_pixel_no_plant():
     
     assert image is not None, "Failed to read test image"
     
-    with pytest.raises(ValueError, match="No plant detected in the image"):
+    # replace with warning
+    
+    with pytest.warns(UserWarning, match="No plant detected in the image"):
         graph_info = height_request.get_heighest_green_pixel(
             image,
-            lettuce_color_bounds,
+            plastic_color_bounds,
             plant_bounds=(.3, .7)
         )

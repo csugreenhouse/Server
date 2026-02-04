@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # initialize test database
-bash "$SCRIPT_DIR/run/initialize_test_db.sh"
+bash "$SCRIPT_DIR/run/reset_test_db.sh"
 
 if pytest -s
 then
@@ -15,8 +15,7 @@ then
 fi
 
 # reset test database
-bash "$SCRIPT_DIR/run/reset_test_db.sh"
 
-echo "✅ test database reset after tests"
+#echo "✅ test database reset after tests"
 
-pytest -s 
+#pytest -s 

@@ -12,7 +12,7 @@ if str(ROOT) not in os.sys.path:
     os.sys.path.insert(0, str(ROOT))
 
 BASE_DIR = Path(__file__).resolve().parent
-IMG_DIR = BASE_DIR / "images" / "test_april_codes"
+IMG_DIR = BASE_DIR / "images" / "test_april_tag"
 
 reference_util = importlib.import_module("plant_requests.utils.reference_tag_util")
 graph_util = importlib.import_module("plant_requests.utils.graph_util")

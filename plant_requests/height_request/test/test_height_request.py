@@ -3,6 +3,7 @@ from pathlib import Path
 import os
 import pytest
 import cv2
+import warnings
 
 ROOT = Path(__file__).resolve().parents[3] # repo root (/srv/samba/Server)
 if str(ROOT) not in os.sys.path:
@@ -28,6 +29,9 @@ test_camera_parameters = {
     "ip_address": "192.168.0.11"
     }
 
+def test_height_request_exists():
+    assert hasattr(hr, "height_request"), "height_request() not found"  
+
 def test_height_request_01():
     src = IMG_DIR / "test_height_request_00.jpg"
     dst = IMG_DIR / "test_height_request_00_out.png"
@@ -40,6 +44,7 @@ def test_height_request_01():
     plant_id_2 = 2
     bias_1 = .01
     bias_2 = .01
+    
     views_1 = [
         scanner_util.make_height_view(plant_id_1,plant_bounds_1,color_bounds,bias_1)
     ]
@@ -62,3 +67,42 @@ def test_height_request_01():
 
     assert response[0]["estimated_height"] == pytest.approx(.34, rel=.1)
     assert response[1]["estimated_height"] == pytest.approx(.26, rel=.1)
+
+def test_height_request_02():
+    src = IMG_DIR / "TEST02.jpg"
+    dst = IMG_DIR / "TEST02_out.png"
+    image = cv2.imread(str(src))
+    
+    reference_tags = scanner_util.scan_reference_tags(image, test_camera_parameters)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", Warning)
+        response = hr.height_request(image, reference_tags, test_camera_parameters)
+
+    graph_util.plot_height_request_response(image, dst, response)
+    
+def test_height_request_03():
+    src = IMG_DIR / "TEST03.jpg"
+    dst = IMG_DIR / "TEST03_out.png"
+    image = cv2.imread(str(src))
+    
+    reference_tags = scanner_util.scan_reference_tags(image, test_camera_parameters)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", Warning)
+        response = hr.height_request(image, reference_tags, test_camera_parameters)
+
+    graph_util.plot_height_request_response(image, dst, response)
+    
+def test_height_request_04():
+    src = IMG_DIR / "TEST04.jpg"
+    dst = IMG_DIR / "TEST04_out.png"
+    image = cv2.imread(str(src))
+    
+    reference_tags = scanner_util.scan_reference_tags(image, test_camera_parameters)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", Warning)
+        response = hr.height_request(image, reference_tags, test_camera_parameters)
+
+    graph_util.plot_height_request_response(image, dst, response)
