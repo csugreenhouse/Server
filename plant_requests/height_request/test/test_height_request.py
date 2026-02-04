@@ -106,3 +106,16 @@ def test_height_request_04():
         response = hr.height_request(image, reference_tags, test_camera_parameters)
 
     graph_util.plot_height_request_response(image, dst, response)
+
+def test_height_request_04_LARGE():
+    src = IMG_DIR / "TEST04_LARGE.jpg"
+    dst = IMG_DIR / "TEST04_LARGE_out.png"
+    image = cv2.imread(str(src))
+    
+    reference_tags = scanner_util.scan_reference_tags(image, test_camera_parameters)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", Warning)
+        response = hr.height_request(image, reference_tags, test_camera_parameters)
+
+    graph_util.plot_height_request_response(image, dst, response)
