@@ -1,25 +1,34 @@
-# Server
-This repository holds the imaging software for the server.
+This is the main repository to explain code in the server repository. Each new method should have a breif explanation of what the method hopes to acheive, and various parameters. 
 
-# SUMMARY OF CODE
-  ## Image Getter 
-		Responsable for scanning threw the ESP32 Cameras to access images
-  ## Requests
-		Responsible for all request types from the images
-### height_request
-		Responsible for estimating the height of an image given the image and a reference
-### area_request
-		Not yet implemented, responsibel for estimating the surface area of a plant
-### data_request
-		get data points such as
-		- distance the base of the plant is away from the camera
-		- qr code information
-		- april tag information
-### debug
-		Responsible for draw picture, which is used for a nice debug screen to see information like april 
-		tag location or mask of the plant
-## database_interface
-		Will be how the user interacts with the database. Only used for simple queries for now
-		
+# SERVER
+This repository holds the imaging software for the server. ANything that is on the server is also apart of this repository. This repository should not talk about camera information nor ESP32 information. The Program will be broken down in corresponding to file directories. The first of these directories is _Database_ This holds files to interact with the database. plant_request is in charge of requests, usually with input of an image, and does some processing of this image, to insert into the database. This is where most of the program resides. Lastly, run is used for essentially running the program. All of these will be broken down more further in the description.
+
+# DATABASE
+## DATABASE_UTIL.PY
+Database util is the util responsible for getting and setting various parameters inside of the database. We will go through methods and each individual role they posses. Below are methods utalized.
+### open_connection_to_database(): conn
+This method is responsible for opening the connection to the database inside of the mini server in the greenhouse. Used for the actuall deployment of the server. It connects to the 'greenhouse' database. 
+### open_connection_to_test_database(): conn
+This method is responsible for opening the connection to the test database inside individuals computers for testing purposes. This greenhouse is called 'test-greenhouse'
+### close_connection_to_database(conn): 
+This method is responsible for closing the connection to the database. **it is very important to remember to close this after each connection is open** Otherwise, multiple connections could be open, eventually resulting in a crash. 
+### get_available_camera_parameters_from_database(conn): camera_parameter_dictionary_list
+This method finds all cameras in the database, and returns a list of camera_parameter dictionaries, which includes camera_id, width, height, focal_lenght_mm, sensor_height_mm, sensor_width_mm, and ip_address. 
+### get_tag_views_from_database(conn, tag_id): view_dictionary_list
+returns a list of view dictionaries that contain  plant_id, tag_id, scientific_name, view_type, image_bounds, color_bounds. This method is mainly used in the scan reference tags, and is the way for views to be fetched from teh database
+### get_tag_scale_from_database(conn, tag_id): scale
+queries the database and returns the scale of the april tag. will usually be .07. This is also in the creation of the scan_reference_tags and other methods found in the reference_tag_util
+### execute_query(conn,query,params=None): results
+responsible for cleaning the inputs of the queries to protect from malicious attacks. you should not call cur.execute(query) without cleaning the inputs of the query. 
+
+# plant requests 
+plant requests consists of a major portion of the code in the program the plant rrequests files are sorted into area_request, height_request, width_request, and requestor
+# area_request
+_not yet implemented_
+# 
+
+
+
+
 
   
