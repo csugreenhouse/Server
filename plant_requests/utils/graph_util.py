@@ -117,6 +117,34 @@ def plot_height_request_response(image, out_path, response):
     
 # Plot the response from width_request
 
+def plot_estimated_widths_response(image, out_path, response):
+    graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    W,H = graph_rgb.shape[1], graph_rgb.shape[0]
+    fig, ax = plt.subplots()
+    ax.imshow(graph_rgb)
+    ax.axis('on')
+    
+    for i, view_response in enumerate(response):
+        add_tag(ax,view_response["reference_tag"], color=color_pallet[i%len(color_pallet)])#outline tag
+        color = color_pallet[i%len(color_pallet)]#choose color pallett
+        plant_id = view_response["plant_id"]
+        estimated_width = view_response["estimated_width"]
+        green_blob_list = view_response["green_blob_list"]
+        #tag_bias = view_response["bias_units_m"] #not necessary for width
+        add_point(ax, view_response["leftmost_green_pixel"], color="blue")
+        add_point(ax, view_response["rightmost_green_pixel"], color="red")
+
+        add_plant_bounds(ax,W,H,view_response["plant_bounds"],color=color)#plant bounds vertical lines.
+
+        add_green_blobs(ax,green_blob_list,color)#draws green blobs around leaves
+
+        ax.plot([], [], color=color, label=f"plant {plant_id}: {round(estimated_width*100,2)}cm FH {round(view_response['fractional_width']*100,2)}cm")
+        
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
+
+    plt.savefig(str(out_path), bbox_inches="tight")
+    plt.close(fig)
+
 
 
 
