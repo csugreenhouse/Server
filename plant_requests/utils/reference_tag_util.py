@@ -94,7 +94,7 @@ def make_reference_tag(raw_april_tag, camera_parameters, scale=None, views=None)
     tag_id = int(raw_april_tag.tag_id)
     
     if scale is None or views is None:
-        conn = database_util.open_connection_to_test_database()
+        conn = database_util.open_connection_to_database()
         scale = scale if scale is not None else database_util.get_tag_scale_from_database(conn, tag_id)
         views = views if views is not None else database_util.get_tag_views_from_database(conn, tag_id)
         database_util.close_connection_to_database(conn)

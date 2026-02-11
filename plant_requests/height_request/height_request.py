@@ -8,6 +8,7 @@ import sys
 sys.path.append('/srv/samba/Server/plant_requests')
 import numpy as np
 import plant_requests.utils.reference_tag_util as reference_tag_util
+import database.database_util as database_util
 import plant_requests.utils.line_util as line_util
 import plant_requests.utils.image_util as image_util
 import plant_requests.utils.reference_tag_util as reference_util
@@ -18,7 +19,7 @@ def scan_green_blobs(image,
                 color_bounds,
                 open_kernel_size=(5,5),
                 close_kernel_size=(5,5),
-                minimum_area_pixels=500,
+                minimum_area_pixels=50,
                 maximum_area_pixels=100000
                 ):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -27,7 +28,7 @@ def scan_green_blobs(image,
     k_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, close_kernel_size)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, k_open)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k_close)
-    numb_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask, connectivity=4)
+    numb_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask, connectivity=8)
     plant_blob_list = []
     for label in range(1, numb_labels):
         area = stats[label, cv2.CC_STAT_AREA]
@@ -50,14 +51,11 @@ def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1)):
         x_max = int(min(W-1, plant_bounds[1]*W))
         mask[:, x_min:x_max] = 255
         image = cv2.bitwise_and(image, image, mask=mask)
+    
     plant_blob_list = scan_green_blobs(image, color_bounds)
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     if len(plant_blob_list) == 0:
-        warnings.warn(
-            "No plant detected in the image color bounds provided\n"
-            "color bounds lower: {}, upper: {}\n"
-            "plant bounds: lower: {}, upper: {}".format(color_bounds[0], color_bounds[1], plant_bounds[0], plant_bounds[1])
-            )
+        raise ValueError("No plant detected in the image")
     heighest_pixel = None
     mask = np.zeros(hsv.shape[:2], dtype="uint8")
     for plant in plant_blob_list:
@@ -95,6 +93,7 @@ def height_request(image, reference_tags, camera_parameters):
         response [{
             "reference_tag": reference_tag,
             "plant_id": plant_id,
+            "species_id": species_id,
             "estimated_height": estimated_height,
             "fractional_height": fractional_height,
             "equation_top": equation_top,
@@ -134,20 +133,15 @@ def estimate_heights_reference_tag(image, reference_tag):
         heighest_green_pixel_info = get_heighest_green_pixel(image, color_bounds, plant_bounds)
         heighest_green_pixel = heighest_green_pixel_info["heighest_green_pixel"]
         green_blob_list = heighest_green_pixel_info["green_blob_list"]
-        plant_bounds = heighest_green_pixel_info["plant_bounds"]
-        
-
+        plant_bounds =heighest_green_pixel_info["plant_bounds"]
         
         equation_top = line_util.get_equation_of_line(tag_top_left_corner, tag_top_right_corner)
         equation_bottom = line_util.get_equation_of_line(tag_bottom_left_corner, tag_bottom_right_corner)
         
-        if heighest_green_pixel is None:
-            fractional_height = 0.0
-            estimated_height = 0.0
-            
-        else:
-            fractional_height = line_util.fractional_height_between_lines(equation_top, equation_bottom, heighest_green_pixel)
-            estimated_height = tag_scale_units_m * fractional_height + bias_units_m 
+        fractional_height = line_util.fractional_height_between_lines(equation_top, equation_bottom, heighest_green_pixel)
+        
+        
+        estimated_height = tag_scale_units_m * fractional_height + bias_units_m 
         
         view_response = {
             "reference_tag": reference_tag,

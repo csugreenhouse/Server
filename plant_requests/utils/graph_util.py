@@ -106,7 +106,10 @@ def plot_height_request_response(image, out_path, response):
         add_point(ax,view_response["heighest_green_pixel"],color="green")
         add_plant_bounds(ax,W,H,view_response["plant_bounds"],color=color)
         add_green_blobs(ax,green_blob_list,color)
-        ax.plot([], [], color=color, label=f"plant {plant_id}: {round(estimated_height*100,2)}cm FH {round(view_response['fractional_height']*100,2)}cm \n bias: {round(tag_bias*100,2)}cm")
+        ax.plot([], [], color=color, label=
+                f"plant {plant_id}: {round(estimated_height*100,2)}cm FH {round(view_response['fractional_height']*100,2)}cm \n"
+                  f"bias: {round(tag_bias*100,2)}cm color bounds: {view_response['color_bounds'][0]},{view_response['color_bounds'][1]}\n")
+                  #f"species_id {view_response['species_id']}")
     
     ax.imshow(graph_rgb)
     ax.axis('on')
