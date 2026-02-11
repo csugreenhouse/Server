@@ -69,7 +69,7 @@ def open_connection_to_database():
 def close_connection_to_database(conn):
     if conn:
         conn.close() 
-        
+
 def get_tag_views_from_database(conn, tag_id):
     """query = (
         "SELECT "
@@ -100,6 +100,7 @@ def get_tag_views_from_database(conn, tag_id):
         "v.view_type, "
         "v.image_bound_upper, "
         "v.image_bound_lower, "
+        "s.species_id, "
         "s.scientific_name, "
         "s.lower_color_bound_hue, "
         "s.lower_color_bound_saturation, "
@@ -122,28 +123,56 @@ def get_tag_views_from_database(conn, tag_id):
     for results_row in results:
         temp_veiw = (
             {
+            "species_id": results_row[5],
             "plant_id": results_row[0],
             "tag_id": results_row[1],
-            "scientific_name": results_row[5],
+            "scientific_name": results_row[6],
             "view_type": results_row[2],
             "image_bound_upper": float(results_row[3]),
             "image_bound_lower": float(results_row[4]),
             "color_bound_lower": (
-                float(results_row[6]),
                 float(results_row[7]),
-                float(results_row[8])
+                float(results_row[8]),
+                float(results_row[9])
             ),
             "color_bound_upper": (
-                float(results_row[9]),
                 float(results_row[10]),
-                float(results_row[11])
+                float(results_row[11]),
+                float(results_row[12])
             ),
         })
         if results_row[2] == "height":
-            temp_veiw["bias_units_m"] = float(results_row[12])
+            temp_veiw["bias_units_m"] = float(results_row[13])
         view.append(temp_veiw)
 
     return view
+
+def set_color_bounds_for_species_in_database(conn, species_id, color_bounds):
+    query = (
+        "UPDATE species "
+        "SET lower_color_bound_hue = %s, "
+        "    lower_color_bound_saturation = %s, "
+        "    lower_color_bound_value = %s, "
+        "    upper_color_bound_hue = %s, "
+        "    upper_color_bound_saturation = %s, "
+        "    upper_color_bound_value = %s "
+        "WHERE species_id = %s;"
+    )
+    
+    params = (
+        color_bounds[0][0],
+        color_bounds[0][1],
+        color_bounds[0][2],
+        color_bounds[1][0],
+        color_bounds[1][1],
+        color_bounds[1][2],
+        species_id
+    )
+    try:        
+        execute_query(conn, query, params)
+        print(f"Color bounds for species_id {species_id} updated successfully.")
+    except Exception as e:        
+        print(f"Error updating color bounds for species_id {species_id}: {e}")
 
 
 def get_tag_scale_from_database(conn, tag_id):
@@ -174,7 +203,8 @@ def execute_query(conn,query,params=None):
         return results
     except Exception as e:
         conn.rollback()
-        print(f"Database error: {e}")
+        raise LookupError(f"Database error: {e}")
     finally:
         pass
     
+

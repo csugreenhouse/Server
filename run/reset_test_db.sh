@@ -60,6 +60,6 @@ SQL
 
 sudo -u postgres psql -X -q -d "${TEST_DB}" -c \
 "GRANT ALL ON SCHEMA public TO greenhouse_test_user;
- GRANT SELECT ON species, plant, view, tag, height_view, width_view TO greenhouse_test_user;"
+ GRANT SELECT ON species, plant, view, tag, camera, height_view, width_view TO greenhouse_test_user;"
 
 echo "✅ Fresh test database ready: ${TEST_DB}"

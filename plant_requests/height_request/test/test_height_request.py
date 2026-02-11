@@ -119,3 +119,4 @@ def test_height_request_04_LARGE():
         response = hr.height_request(image, reference_tags, test_camera_parameters)
 
     graph_util.plot_height_request_response(image, dst, response)
+import psycopg2

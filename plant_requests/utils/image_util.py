@@ -27,11 +27,14 @@ def time_stamp():
     return datetime.now().strftime("%Y%m%d_%H%M%S")
 
 def save_image_to_server_directory(camera_id, image):
-    save_path = f'/srv/samba/plants/image/cam{camera_id}/{time_stamp()}.jpg'
+    save_path = f'/srv/samba/plants/image/by_camera/cam{camera_id}/{time_stamp()}.jpg'
     cv2.imwrite(save_path, image)
     return save_path
 
-
+def save_image_to_server_directory_by_plant(plant_id, image):
+    save_path = f'/srv/samba/plants/image/by_plant/plant{plant_id}/{time_stamp()}.jpg'
+    cv2.imwrite(save_path, image)
+    return save_path
 
     
 
