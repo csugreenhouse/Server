@@ -44,20 +44,15 @@ def test_height_request_01():
     plant_id_2 = 2
     bias_1 = .01
     bias_2 = .01
-    
     views_1 = [
         scanner_util.make_height_view(plant_id_1,plant_bounds_1,color_bounds,bias_1)
     ]
     views_2 = [
         scanner_util.make_height_view(plant_id_2,plant_bounds_2,color_bounds,bias_2)
     ]
-    
-    
     raw_tags = scanner_util.scan_raw_tags(image)
     raw_tag_1 = raw_tags[0]
     raw_tag_2 = raw_tags[1]
-
-
     reference_tag_1 = scanner_util.make_reference_tag(raw_tag_1,test_camera_parameters,scale=.07,views=views_1)
     reference_tag_2 = scanner_util.make_reference_tag(raw_tag_2,test_camera_parameters,scale=.07,views=views_2)
     
@@ -73,7 +68,18 @@ def test_height_request_02():
     dst = IMG_DIR / "TEST02_out.png"
     image = cv2.imread(str(src))
     
-    reference_tags = scanner_util.scan_reference_tags(image, test_camera_parameters)
+    color_bounds = plastic_color_bounds
+    plant_bounds_1 = (.2, .5)
+    plant_id_1 = 1
+    bias_1 = .01
+    views_1 = [
+        scanner_util.make_height_view(plant_id_1,plant_bounds_1,color_bounds,bias_1)
+    ]
+    raw_tags = scanner_util.scan_raw_tags(image)
+    raw_tag_1 = raw_tags[0]
+    reference_tag_1 = scanner_util.make_reference_tag(raw_tag_1,test_camera_parameters,scale=.07,views=views_1)
+    
+    reference_tags = [reference_tag_1]
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", Warning)
@@ -86,7 +92,18 @@ def test_height_request_03():
     dst = IMG_DIR / "TEST03_out.png"
     image = cv2.imread(str(src))
     
-    reference_tags = scanner_util.scan_reference_tags(image, test_camera_parameters)
+    color_bounds = plastic_color_bounds
+    plant_bounds_1 = (.2, .5)
+    plant_id_1 = 1
+    bias_1 = .01
+    views_1 = [
+        scanner_util.make_height_view(plant_id_1,plant_bounds_1,color_bounds,bias_1)
+    ]
+    raw_tags = scanner_util.scan_raw_tags(image)
+    raw_tag_1 = raw_tags[0]
+    reference_tag_1 = scanner_util.make_reference_tag(raw_tag_1,test_camera_parameters,scale=.07,views=views_1)
+    
+    reference_tags = [reference_tag_1]
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", Warning)
@@ -99,7 +116,18 @@ def test_height_request_04():
     dst = IMG_DIR / "TEST04_out.png"
     image = cv2.imread(str(src))
     
-    reference_tags = scanner_util.scan_reference_tags(image, test_camera_parameters)
+    color_bounds = plastic_color_bounds
+    plant_bounds_1 = (.2, .5)
+    plant_id_1 = 1
+    bias_1 = .01
+    views_1 = [
+        scanner_util.make_height_view(plant_id_1,plant_bounds_1,color_bounds,bias_1)
+    ]
+    raw_tags = scanner_util.scan_raw_tags(image)
+    raw_tag_1 = raw_tags[0]
+    reference_tag_1 = scanner_util.make_reference_tag(raw_tag_1,test_camera_parameters,scale=.07,views=views_1)
+    
+    reference_tags = [reference_tag_1]
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", Warning)
@@ -112,7 +140,18 @@ def test_height_request_04_LARGE():
     dst = IMG_DIR / "TEST04_LARGE_out.png"
     image = cv2.imread(str(src))
     
-    reference_tags = scanner_util.scan_reference_tags(image, test_camera_parameters)
+    color_bounds = plastic_color_bounds
+    plant_bounds_1 = (.2, .5)
+    plant_id_1 = 1
+    bias_1 = .01
+    views_1 = [
+        scanner_util.make_height_view(plant_id_1,plant_bounds_1,color_bounds,bias_1)
+    ]
+    raw_tags = scanner_util.scan_raw_tags(image)
+    raw_tag_1 = raw_tags[0]
+    reference_tag_1 = scanner_util.make_reference_tag(raw_tag_1,test_camera_parameters,scale=.07,views=views_1)
+    
+    reference_tags = [reference_tag_1]
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", Warning)
