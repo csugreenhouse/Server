@@ -7,3 +7,7 @@ env/
 
 __pycache__/
 *.pyc
+
+*_out.png
+*_out.jpg
+*_out.jpeg

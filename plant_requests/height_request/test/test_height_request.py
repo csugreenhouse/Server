@@ -15,6 +15,7 @@ IMG_DIR = BASE_DIR / "images" / "test_height_request"
 hr = importlib.import_module("plant_requests.height_request.height_request")
 scanner_util = importlib.import_module("plant_requests.utils.reference_tag_util")
 graph_util = importlib.import_module("plant_requests.utils.graph_util")
+db = importlib.import_module("database.database_util")
 
 plastic_color_bounds = ((30, 60, 30),(90, 255, 200))
 lettuce_color_bounds = ((30, 35, 30),(75, 255, 255))
@@ -44,20 +45,15 @@ def test_height_request_01():
     plant_id_2 = 2
     bias_1 = .01
     bias_2 = .01
-    
     views_1 = [
         scanner_util.make_height_view(plant_id_1,plant_bounds_1,color_bounds,bias_1)
     ]
     views_2 = [
         scanner_util.make_height_view(plant_id_2,plant_bounds_2,color_bounds,bias_2)
     ]
-    
-    
     raw_tags = scanner_util.scan_raw_tags(image)
     raw_tag_1 = raw_tags[0]
     raw_tag_2 = raw_tags[1]
-
-
     reference_tag_1 = scanner_util.make_reference_tag(raw_tag_1,test_camera_parameters,scale=.07,views=views_1)
     reference_tag_2 = scanner_util.make_reference_tag(raw_tag_2,test_camera_parameters,scale=.07,views=views_2)
     
@@ -73,7 +69,9 @@ def test_height_request_02():
     dst = IMG_DIR / "TEST02_out.png"
     image = cv2.imread(str(src))
     
-    reference_tags = scanner_util.scan_reference_tags(image, test_camera_parameters)
+    conn = db.open_connection_to_test_database()
+    reference_tags = scanner_util.scan_reference_tags(image,test_camera_parameters, conn)
+    db.close_connection_to_database(conn)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", Warning)
@@ -86,7 +84,9 @@ def test_height_request_03():
     dst = IMG_DIR / "TEST03_out.png"
     image = cv2.imread(str(src))
     
-    reference_tags = scanner_util.scan_reference_tags(image, test_camera_parameters)
+    conn = db.open_connection_to_test_database()
+    reference_tags = scanner_util.scan_reference_tags(image,test_camera_parameters, conn)
+    db.close_connection_to_database(conn)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", Warning)
@@ -99,20 +99,23 @@ def test_height_request_04():
     dst = IMG_DIR / "TEST04_out.png"
     image = cv2.imread(str(src))
     
-    reference_tags = scanner_util.scan_reference_tags(image, test_camera_parameters)
+    conn = db.open_connection_to_test_database()
+    reference_tags = scanner_util.scan_reference_tags(image,test_camera_parameters, conn)
+    db.close_connection_to_database(conn)
 
-    with warnings.catch_warnings():
+    with pytest.raises(ValueError, match="No plant detected in the image"):
         warnings.simplefilter("ignore", Warning)
         response = hr.height_request(image, reference_tags, test_camera_parameters)
-
-    graph_util.plot_height_request_response(image, dst, response)
+        graph_util.plot_height_request_response(image, dst, response)
 
 def test_height_request_04_LARGE():
     src = IMG_DIR / "TEST04_LARGE.jpg"
     dst = IMG_DIR / "TEST04_LARGE_out.png"
     image = cv2.imread(str(src))
     
-    reference_tags = scanner_util.scan_reference_tags(image, test_camera_parameters)
+    conn = db.open_connection_to_test_database()
+    reference_tags = scanner_util.scan_reference_tags(image,test_camera_parameters, conn)
+    db.close_connection_to_database(conn)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", Warning)

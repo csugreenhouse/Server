@@ -67,7 +67,7 @@ def scan_apriltags(image):
             raise ValueError("No april tags at all have been found")
     return valid_tags
 
-def scan_reference_tags(image, camera_parameters):
+def scan_reference_tags(image, camera_parameters, conn):
     results = scan_raw_tags(image)
     
     DECISION_MARGIN = 40.0
@@ -77,7 +77,7 @@ def scan_reference_tags(image, camera_parameters):
     for raw_tag in results:
         #print(f"TAG ID {tag.tag_id} with decision margin {tag.decision_margin}")
         if (raw_tag.decision_margin>DECISION_MARGIN):
-            reference_tag = make_reference_tag(raw_tag,camera_parameters)
+            reference_tag = make_reference_tag(raw_tag,camera_parameters,conn)
             reference_tags.append(reference_tag)    
     
     if (len(reference_tags)==0):
@@ -88,17 +88,18 @@ def scan_reference_tags(image, camera_parameters):
   
     return reference_tags
 
-def make_reference_tag(raw_april_tag, camera_parameters, scale=None, views=None):
+def make_reference_tag(raw_april_tag, camera_parameters, conn=None, scale=None, views=None):
+    # if no connection is passed, ensure that scales and views are populated.
+    if (conn is None):
+        if scale is None or views is None:
+             raise ValueError("bot view and scale need to be provided if you dont pass a connection")
     # pupil_apriltags detection fields:
     #   raw_april_tag.tag_id, raw_april_tag.corners, raw_april_tag.center
     tag_id = int(raw_april_tag.tag_id)
     
-    if scale is None or views is None:
-        conn = database_util.open_connection_to_database()
-        scale = scale if scale is not None else database_util.get_tag_scale_from_database(conn, tag_id)
-        views = views if views is not None else database_util.get_tag_views_from_database(conn, tag_id)
-        database_util.close_connection_to_database(conn)
-
+    scale = scale if scale is not None else database_util.get_tag_scale_from_database(conn, tag_id)
+    views = views if views is not None else database_util.get_tag_views_from_database(conn, tag_id)
+        
     # Ensure numpy arrays -> tuples (JSON safe)
     corners_np = np.asarray(raw_april_tag.corners, dtype=np.float32)
     center_np = np.asarray(raw_april_tag.center, dtype=np.float32)
