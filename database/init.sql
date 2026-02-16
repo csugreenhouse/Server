@@ -11,6 +11,7 @@
 -- =========================
 -- 1) Drop existing objects
 -- =========================
+-- see if table exists before dropping to avoid errors when running this script multiple times
 DROP TABLE IF EXISTS height_view CASCADE;
 DROP TABLE IF EXISTS width_view CASCADE;
 DROP TABLE IF EXISTS plant_view CASCADE;
@@ -18,6 +19,8 @@ DROP TABLE IF EXISTS view CASCADE;
 DROP TABLE IF EXISTS tag CASCADE;
 DROP TABLE IF EXISTS plant CASCADE;
 DROP TABLE IF EXISTS species CASCADE;
+DROP TABLE IF EXISTS height_log CASCADE;
+DROP TABLE IF EXISTS width_log CASCADE;
 DROP TYPE IF EXISTS view_type_enum CASCADE;
 
 
@@ -81,6 +84,21 @@ CREATE TABLE width_view (
   view_id BIGINT PRIMARY KEY REFERENCES view(view_id) ON DELETE CASCADE
 );
 
+Create table height_log (
+  height_log_id BIGSERIAL PRIMARY KEY,
+  plant_id INT NOT NULL REFERENCES plant(plant_id) ON DELETE CASCADE,
+  height_units_m Decimal not null check (height_units_m >= 0),
+  file_path TEXT NOT NULL,
+  measured_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+Create table width_log (
+  width_log_id BIGSERIAL PRIMARY KEY,
+  plant_id INT NOT NULL REFERENCES plant(plant_id) ON DELETE CASCADE,
+  width_units_m Decimal not null check (width_units_m >= 0),
+  file_path TEXT NOT NULL,
+  measured_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 
 -- =========================
 -- 4) Seed data
@@ -134,8 +152,6 @@ INSERT INTO tag (tag_id, scale_units_m) VALUES
 (3, 0.07),
 (4, 0.07);
 
-
-
 INSERT INTO view (tag_id, plant_id, view_type, image_bound_upper, image_bound_lower) VALUES
 -- Tag 4 → Truchas (plants 1,2)
 (4, 1, 'height', 0.5, 0.0),
@@ -162,3 +178,4 @@ INSERT INTO height_view (view_id, bias_units_m) VALUES
 (6, 0.0),
 (7, 0.0),
 (8, 0.0);
+

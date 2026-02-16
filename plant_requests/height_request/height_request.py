@@ -55,7 +55,7 @@ def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1)):
     plant_blob_list = scan_green_blobs(image, color_bounds)
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     if len(plant_blob_list) == 0:
-        raise ValueError("No plant detected in the image")
+        raise Warning("No plant detected in the image")
     heighest_pixel = None
     mask = np.zeros(hsv.shape[:2], dtype="uint8")
     for plant in plant_blob_list:
@@ -86,8 +86,8 @@ def height_request(image, reference_tags, camera_parameters):
         raise ValueError("No reference tags were provided")
     
     response = estimate_heights_reference_tags(image, reference_tags)
+    
     return response
-
 """
  #PERFORM THE HEIGHT ESTIMATION AND RETURN THE APPROPRIATE DEBUG. RESPONSE IS IN FORMAT
         response [{
@@ -138,10 +138,13 @@ def estimate_heights_reference_tag(image, reference_tag):
         equation_top = line_util.get_equation_of_line(tag_top_left_corner, tag_top_right_corner)
         equation_bottom = line_util.get_equation_of_line(tag_bottom_left_corner, tag_bottom_right_corner)
         
-        fractional_height = line_util.fractional_height_between_lines(equation_top, equation_bottom, heighest_green_pixel)
-        
-        
-        estimated_height = tag_scale_units_m * fractional_height + bias_units_m 
+
+        if (heighest_green_pixel is None):
+            fractional_height = 0
+            estimated_height = 0
+        else:  
+            fractional_height = line_util.fractional_height_between_lines(equation_top, equation_bottom, heighest_green_pixel)
+            estimated_height = tag_scale_units_m * fractional_height + bias_units_m 
         
         view_response = {
             "reference_tag": reference_tag,
