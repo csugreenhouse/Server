@@ -16,7 +16,6 @@ conn = database_util.open_connection_to_database()
 camera_parameter_list = database_util.get_available_camera_parameters_from_database(conn)
 database_util.set_color_bounds_for_species_in_database(conn, 2, ((28, 30, 25), (95, 255, 180))) #lettuce
 database_util.set_color_bounds_for_species_in_database(conn, 3, ((30, 60, 30),(85, 240, 255))) #basil
-
 database_util.close_connection_to_database(conn)
 
 def main():
@@ -32,15 +31,19 @@ def main():
                 camera_id = camera_parameters["camera_id"]
                 save_image_by_camera_id(camera_id, image)
 
+                conn = database_util.open_connection_to_database()
                 #save for each plant id in the image
                 if image is not None:
-                    reference_tags = reference_util.scan_reference_tags(image,camera_parameters)
+                    reference_tags = reference_util.scan_reference_tags(image,camera_parameters,conn)
                     for reference_tag in reference_tags:
                         views = reference_tag["views"]
                         for view in views:
                             save_image_by_plant_id(view["plant_id"], image)
+                print(f"image successfully saved by plant id and camera number")
 
-                graph_info_by_camera(camera_id, image, camera_parameters)
+                graph_info_by_camera(camera_id, image, camera_parameters,conn)
+
+                database_util.close_connection_to_database(conn)
 
             except Exception as e:
                 print(e)
@@ -68,10 +71,10 @@ def save_image_by_camera_id(camera_id, image):
         print(e)
         print("\033[91mFailed to save image by camera, for camera no. {camera_id}\033[0m")
 
-def graph_info_by_camera(camera_id, image, camera_parameters):
+def graph_info_by_camera(camera_id, image, camera_parameters,conn):
     try: 
         if image is not None:
-            reference_tags = reference_util.scan_reference_tags(image,camera_parameters)
+            reference_tags = reference_util.scan_reference_tags(image,camera_parameters,conn)
             for reference_tag in reference_tags:
                 response = hr.height_request(image, [reference_tag], camera_parameters)
             
