@@ -37,6 +37,8 @@ def test_height_request_01():
     src = IMG_DIR / "test_height_request_00.jpg"
     dst = IMG_DIR / "test_height_request_00_out.png"
     image = cv2.imread(str(src))
+    
+    # Estimated heights should be around .34m for plant 1 and .26m for plant 2.
 
     color_bounds = plastic_color_bounds
     plant_bounds_1 = (.2, .5)
@@ -60,6 +62,23 @@ def test_height_request_01():
     reference_tags = [reference_tag_1, reference_tag_2]
 
     response = hr.height_request(image, reference_tags, test_camera_parameters)
+    
+    for view_response in response:
+        if view_response["plant_id"] == plant_id_1:
+            assert view_response["estimated_height"] == pytest.approx(.34, rel=.1)
+        elif view_response["plant_id"] == plant_id_2:
+            assert view_response["estimated_height"] == pytest.approx(.26, rel=.1)
+            
+    conn = db.open_connection_to_test_database()
+    for view_response in response:
+        db.insert_height_response_into_database(conn, view_response)
+   
+    
+    assert  db.get_most_recent_height_for_plant_id(conn, 1)["height_units_m"] == pytest.approx(.34, rel=.1)
+    assert  db.get_most_recent_height_for_plant_id(conn, 2)["height_units_m"] == pytest.approx(.26, rel=.1)
+    db.close_connection_to_database(conn)
+    
+    
 
     assert response[0]["estimated_height"] == pytest.approx(.34, rel=.1)
     assert response[1]["estimated_height"] == pytest.approx(.26, rel=.1)
@@ -69,9 +88,12 @@ def test_height_request_02():
     dst = IMG_DIR / "TEST02_out.png"
     image = cv2.imread(str(src))
     
+    # Estimated height should be around .007m for plant 5.
+    # Plant 6 has a reading, but should be ingored.
+    
     conn = db.open_connection_to_test_database()
+    
     reference_tags = scanner_util.scan_reference_tags(image,test_camera_parameters, conn)
-    db.close_connection_to_database(conn)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", Warning)
@@ -79,10 +101,18 @@ def test_height_request_02():
 
     graph_util.plot_height_request_response(image, dst, response)
     
+    for view_response in response:
+        db.insert_height_response_into_database(conn, view_response)
+    assert  db.get_most_recent_height_for_plant_id(conn, 5)["height_units_m"] == pytest.approx(.007, rel=.1)
+    
+    db.close_connection_to_database(conn)
+    
 def test_height_request_03():
     src = IMG_DIR / "TEST03.jpg"
     dst = IMG_DIR / "TEST03_out.png"
     image = cv2.imread(str(src))
+    
+    # No plants in the image, but picking up some random colors.
     
     conn = db.open_connection_to_test_database()
     reference_tags = scanner_util.scan_reference_tags(image,test_camera_parameters, conn)
@@ -98,25 +128,36 @@ def test_height_request_04():
     src = IMG_DIR / "TEST04.jpg"
     dst = IMG_DIR / "TEST04_out.png"
     image = cv2.imread(str(src))
-    
     conn = db.open_connection_to_test_database()
+    
+    # no plants at all, Should be 0 cm for both.
+    
     reference_tags = scanner_util.scan_reference_tags(image,test_camera_parameters, conn)
-    db.close_connection_to_database(conn)
-
-    with pytest.raises(ValueError, match="No plant detected in the image"):
-        warnings.simplefilter("ignore", Warning)
+    
+    response = None
+    with pytest.raises(Warning, match="No plant detected in the image"):
         response = hr.height_request(image, reference_tags, test_camera_parameters)
         graph_util.plot_height_request_response(image, dst, response)
+        for view_response in response:
+            db.insert_height_response_into_database(conn, view_response)
+        assert  db.get_most_recent_height_for_plant_id(conn, 5)["height_units_m"] == pytest.approx(0, rel=.1)
+        assert  db.get_most_recent_height_for_plant_id(conn, 6)["height_units_m"] == pytest.approx(0, rel=.1)
+    db.close_connection_to_database(conn)
+            
+        
 
 def test_height_request_04_LARGE():
     src = IMG_DIR / "TEST04_LARGE.jpg"
     dst = IMG_DIR / "TEST04_LARGE_out.png"
     image = cv2.imread(str(src))
     
+    # should be 8.75 cm for the plant 6, and 7.75 for plant 5.
+    
     conn = db.open_connection_to_test_database()
     reference_tags = scanner_util.scan_reference_tags(image,test_camera_parameters, conn)
     db.close_connection_to_database(conn)
 
+    response = None
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", Warning)
         response = hr.height_request(image, reference_tags, test_camera_parameters)

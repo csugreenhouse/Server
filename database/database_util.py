@@ -207,4 +207,48 @@ def execute_query(conn,query,params=None):
     finally:
         pass
     
+def get_most_recent_height_for_plant_id(conn, plant_id):
+    query = (
+        "SELECT height_units_m, measured_at "
+        "FROM height_log "
+        "WHERE plant_id = %s "
+        "ORDER BY measured_at DESC "
+        "LIMIT 1;"
+    )
+    results = execute_query(conn, query, (plant_id,))
+    if results and len(results) > 0:
+        return {
+            "height_units_m": float(results[0][0]),
+            "measured_at": results[0][1]
+        }
+    else:
+        return None
+    
+def insert_height_response_into_database(conn, view_response):
+    query = (
+        "INSERT INTO height_log (plant_id, height_units_m, measured_at, file_path) "
+        "VALUES (%s, %s, %s, %s);"
+    )
+    params = (
+        view_response["plant_id"],
+        float(view_response["estimated_height"]),
+        'NOW()',
+        view_response.get("file_path", "unknown")
+    )
+    try:
+        execute_query(conn, query, params)
+    except Exception as e:
+        print(f"Error inserting height log for plant_id {view_response['plant_id']}: {e}")
+        
 
+def insert_width_log_into_database(conn, plant_id, width_m, unproccessed_file_path, timestamp=None):
+    query = (
+        "INSERT INTO width_log (plant_id, width_m, file_path, measured_at) "
+        "VALUES (%s, %s, %s, %s);"
+    )
+    params = (plant_id, width_m, unproccessed_file_path, timestamp or 'NOW()')
+    try:
+        execute_query(conn, query, params)
+        print(f"Width log for plant_id {plant_id} inserted successfully.")
+    except Exception as e:
+        print(f"Error inserting width log for plant_id {plant_id}: {e}")

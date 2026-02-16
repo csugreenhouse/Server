@@ -48,18 +48,27 @@ END
 $$;
 SQL
 
-# 5) Grants (schema + tables)
+#plant_requests/height_request/test/test_height_request.py .Error inserting height log for plant_id 1: Database error: permission denied for sequence height_log_height_log_id_seq
+
 sudo -u postgres psql -X -q -v ON_ERROR_STOP=1 -d "${TEST_DB}" <<SQL
-GRANT USAGE, CREATE ON SCHEMA public TO greenhouse_test_user;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO greenhouse_test_user;
 
--- If you might add tables later and still want them selectable:
+-- 1️⃣ Schema access
+GRANT ALL ON SCHEMA public TO greenhouse_test_user;
+
+-- 2️⃣ Existing tables
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public
+TO greenhouse_test_user;
+
+-- 3️⃣ Existing sequences (this fixes SERIAL/BIGSERIAL issues)
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public
+TO greenhouse_test_user;
+
+-- 4️⃣ Future tables
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
-GRANT SELECT ON TABLES TO greenhouse_test_user;
+GRANT ALL PRIVILEGES ON TABLES TO greenhouse_test_user;
+
+-- 5️⃣ Future sequences
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+GRANT ALL PRIVILEGES ON SEQUENCES TO greenhouse_test_user;
+
 SQL
-
-sudo -u postgres psql -X -q -d "${TEST_DB}" -c \
-"GRANT ALL ON SCHEMA public TO greenhouse_test_user;
- GRANT SELECT ON species, plant, view, tag, camera, height_view, width_view TO greenhouse_test_user;"
-
-echo "✅ Fresh test database ready: ${TEST_DB}"

@@ -75,9 +75,9 @@ def test_heighest_green_pixel_no_plant():
     
     # replace with warning
     
-    with pytest.raises(ValueError, match="No plant detected in the image"):
-        graph_info = height_request.get_heighest_green_pixel(
+    with pytest.raises(Warning, match="No plant detected in the image"):
+        response = height_request.get_heighest_green_pixel(
             image,
             plastic_color_bounds,
-            plant_bounds=(0.3, 0.7)
+            plant_bounds=(.3, .7)
         )
