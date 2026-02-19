@@ -224,21 +224,24 @@ def get_most_recent_height_for_plant_id(conn, plant_id):
     else:
         return None
     
-def insert_height_response_into_database(conn, view_response):
+def insert_height_response_into_database(conn, view_response,raw_file_path,processed_file_path, timestamp=None):
     query = (
-        "INSERT INTO height_log (plant_id, height_units_m, measured_at, file_path) "
-        "VALUES (%s, %s, %s, %s);"
+        "INSERT INTO height_log (plant_id, height_units_m, raw_file_path, processed_file_path, measured_at) "
+        "VALUES (%s, %s, %s, %s, %s);"
     )
     params = (
         view_response["plant_id"],
         float(view_response["estimated_height"]),
-        'NOW()',
-        view_response.get("file_path", "unknown")
+        raw_file_path,
+        processed_file_path,
+        timestamp.split('.')[0] if timestamp else 'NOW()'
     )
     try:
         execute_query(conn, query, params)
     except Exception as e:
+        #still throw the error so that the calling function can handle it, but also print it here for debugging purposes
         print(f"Error inserting height log for plant_id {view_response['plant_id']}: {e}")
+        raise MemoryError(f"Error inserting height log for plant_id {view_response['plant_id']}: {e}")
         
 
 def insert_width_log_into_database(conn, plant_id, width_m, unproccessed_file_path, timestamp=None):
