@@ -19,7 +19,7 @@ def scan_green_blobs(image,
                 color_bounds,
                 open_kernel_size=(5,5),
                 close_kernel_size=(5,5),
-                minimum_area_pixels=50,
+                minimum_area_pixels=200,
                 maximum_area_pixels=100000
                 ):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -77,7 +77,7 @@ def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1)):
 
 # INTERACTION POINT BETWEEN REQUESTOR AND HEIGHT_REQUEST
 
-def height_request(image, reference_tags, camera_parameters):
+def height_request(image, reference_tags, camera_parameters=None):
     if image is None:
         raise ValueError("Input image is None")
     if camera_parameters is None:

@@ -71,7 +71,7 @@ def test_height_request_01():
             
     conn = db.open_connection_to_test_database()
     for view_response in response:
-        db.insert_height_response_into_database(conn, view_response)
+        db.insert_height_response_into_database(conn, view_response, " ", " ", "12/12/2024 12:00:00")
    
     
     assert  db.get_most_recent_height_for_plant_id(conn, 1)["height_units_m"] == pytest.approx(.34, rel=.1)
@@ -102,7 +102,7 @@ def test_height_request_02():
     graph_util.plot_height_request_response(image, dst, response)
     
     for view_response in response:
-        db.insert_height_response_into_database(conn, view_response)
+        db.insert_height_response_into_database(conn, view_response, " ", " ", "12/12/2024 12:00:00")
     assert  db.get_most_recent_height_for_plant_id(conn, 5)["height_units_m"] == pytest.approx(.007, rel=.1)
     
     db.close_connection_to_database(conn)
@@ -139,7 +139,7 @@ def test_height_request_04():
         response = hr.height_request(image, reference_tags, test_camera_parameters)
         graph_util.plot_height_request_response(image, dst, response)
         for view_response in response:
-            db.insert_height_response_into_database(conn, view_response)
+            db.insert_height_response_into_database(conn, view_response, " ", " ", "12/12/2024 12:00:00")
         assert  db.get_most_recent_height_for_plant_id(conn, 5)["height_units_m"] == pytest.approx(0, rel=.1)
         assert  db.get_most_recent_height_for_plant_id(conn, 6)["height_units_m"] == pytest.approx(0, rel=.1)
     db.close_connection_to_database(conn)

@@ -84,11 +84,17 @@ CREATE TABLE width_view (
   view_id BIGINT PRIMARY KEY REFERENCES view(view_id) ON DELETE CASCADE
 );
 
+-- make a key from plant_id and measured_at to make it easier to query for the most recent height/width log for a plant
+
+Create unique index height_log_plant_id_measured_at_idx on height_log (plant_id, measured_at);
+Create unique index width_log_plant_id_measured_at_idx on width_log (plant_id, measured_at);
+
 Create table height_log (
   height_log_id BIGSERIAL PRIMARY KEY,
   plant_id INT NOT NULL REFERENCES plant(plant_id) ON DELETE CASCADE,
   height_units_m Decimal not null check (height_units_m >= 0),
-  file_path TEXT NOT NULL,
+  raw_file_path TEXT NOT NULL,
+  processed_file_path TEXT NOT NULL,
   measured_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -96,7 +102,8 @@ Create table width_log (
   width_log_id BIGSERIAL PRIMARY KEY,
   plant_id INT NOT NULL REFERENCES plant(plant_id) ON DELETE CASCADE,
   width_units_m Decimal not null check (width_units_m >= 0),
-  file_path TEXT NOT NULL,
+  raw_file_path TEXT NOT NULL,
+  processed_file_path TEXT NOT NULL,
   measured_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
