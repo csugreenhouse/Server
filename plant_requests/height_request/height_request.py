@@ -55,7 +55,8 @@ def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1)):
     plant_blob_list = scan_green_blobs(image, color_bounds)
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     if len(plant_blob_list) == 0:
-        raise Warning("No plant detected in the image")
+        # dont stop the program, but still warn the user that no plant was detected, and return None for the heighest pixel and an empty list for the blob list. This way the height request can still be performed, but it will just return a height of 0.
+        warnings.warn("No plant detected in the image with the given color bounds and plant bounds")
     heighest_pixel = None
     mask = np.zeros(hsv.shape[:2], dtype="uint8")
     for plant in plant_blob_list:
