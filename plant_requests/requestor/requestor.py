@@ -77,7 +77,6 @@ def main():
        # wait 30 for the next round of images and height requests
        time.sleep(1800)
 
-
 def save_image_by_plant_id(plant_id, image):
    try:
        save_path = image_util.save_image_to_server_directory_by_plant(plant_id,image)
@@ -111,7 +110,6 @@ def graph_info_by_camera(camera_id, image, camera_parameters, conn):
    except Exception as e:
        print(e)
        print(f"\033[91mfailed to process height request for camera {camera_parameters['camera_id']}\033[0m")
-
 
 main()
 
