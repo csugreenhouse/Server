@@ -20,8 +20,12 @@ conn = database_util.open_connection_to_database()
 
 
 camera_parameter_list = database_util.get_available_camera_parameters_from_database(conn)
+#this color did not pik up any of the basil. Only dark values(((28, 30, 25), (95, 255, 180))) more colorful green perhaps
+#color_bounds = ((30, 60, 30),(85, 240, 255)) #basil
+#that picks up alot of the baisl, but then also captures alot of grey. 
+#colour_bounds = ((30, 35, 30), (95, 255, 180)) #basil
 database_util.set_color_bounds_for_species_in_database(conn, 2, ((28, 30, 25), (95, 255, 180))) #lettuce
-database_util.set_color_bounds_for_species_in_database(conn, 3, ((30, 60, 30),(85, 240, 255))) #basil
+database_util.set_color_bounds_for_species_in_database(conn, 3, ((30, 35, 30), (95, 255, 180))) #basil
 database_util.close_connection_to_database(conn)
 
 
@@ -37,7 +41,7 @@ def main():
                    roughimage = image_util.get_image_from_camera_parameter(camera_parameters)
                    if roughimage is not None:
                        frames.append(roughimage.astype(np.float64)) #overflow
-                   time.sleep(0.025) #delay, tune for light artefacts
+                   time.sleep(0.025+(i*0.05)) #delay, tune for light artefacts. I needed i to be factored in to ensure the frames were not all taken at the same time, which would compound the light artefacts instead of averaging them out.
 
 
                image = np.mean(frames, axis=0).astype(np.uint8)
