@@ -137,7 +137,7 @@ INSERT INTO species (
   'Basil (Italian Genovese)',
   90, 255, 255,
   30, 60, 60
-);
+),
 
 INSERT INTO plant (plant_id,species_id) VALUES
 -- Truchas (Red Lettuce)
