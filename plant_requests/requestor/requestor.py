@@ -26,12 +26,8 @@ camera_parameter_list = database_util.get_available_camera_parameters_from_datab
 # VALUE - how much color vs black, 0 is black, 255 is fully bright
 database_util.set_color_bounds_for_species_in_database(conn, 2, ((28, 30, 25), (95, 255, 180))) #lettuce
 database_util.set_color_bounds_for_species_in_database(conn, 3, ((30, 35, 30), (95, 255, 180))) #basil
-database_util.set_color_bounds_for_species_in_database(conn, 1, ((30, 100, 80),(85, 240, 255))) #mint
+database_util.set_color_bounds_for_species_in_database(conn, 1, ((30, 100, 100),(85, 240, 255))) #mint
 database_util.close_connection_to_database(conn)
-
-camera_parameter_list = [camera_parameter_list[3]] # for testing, just use the first camera parameter set, which should be for camera 1, which is the one in the greenhouse with the plants. This is because the other cameras are not currently set up to have reference tags in their view, so the height request will fail for those cameras. Once we have the height request working for camera 1, we can set up reference tags for the other cameras and then test the height request for those cameras as well.
-
-
 def main():
    while(True):
        print("starting again")

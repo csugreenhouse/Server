@@ -20,13 +20,22 @@ def main():
     main_file_path = f"/srv/samba/plants/image/by_plant/plant{plant_id}/"
     processed_file_path = f"/srv/samba/plants/image/by_plant/plant{plant_id}/processed/"
 
-    # change it to accept less black pixels
-    plant_color_bounds = ((30, 60, 30),(90, 255, 255)) # this should be the same as the color bounds for the plant in the database for this plant id# this should be the same as the color bounds for the plant in the database for this plant id
+    # change it to accept less black pixels# this should be the same as the color bounds for the plant in the database for this plant id# this should be the same as the color bounds for the plant in the database for this plant id
 
     conn = database_util.open_connection_to_database()
-    database_util.set_color_bounds_for_species_in_database(conn, 1, plant_color_bounds)
     camera_parameters = database_util.get_available_camera_parameters_from_database(conn)
-  
+
+    # HUE - what colors, green is around 60, red is around 0 or 180, blue is around 120
+    # SATURATION - how much color vs white, 0 is white, 255 is fully colored
+    # VALUE - how much color vs black, 0 is black, 255 is fully bright
+
+    database_util.set_color_bounds_for_species_in_database(conn, 1, ((30, 110, 110),(90, 240, 255))) #mint
+
+    # delete all files in the processed folder
+    for file in Path(processed_file_path).glob("*"):
+        file.unlink()
+
+    #delete all height responses in the database for this plant id, since we are reprocessing all the images and we dont want duplicate entries in the database
 
     # collect all the files inside of the main file path
     files = Path(main_file_path).glob("*.jpg")

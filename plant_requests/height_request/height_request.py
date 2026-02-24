@@ -19,7 +19,7 @@ def scan_green_blobs(image,
                 color_bounds,
                 open_kernel_size=(5,5),
                 close_kernel_size=(5,5),
-                minimum_area_pixels=500,
+                minimum_area_pixels=100,
                 maximum_area_pixels=100000
                 ):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
