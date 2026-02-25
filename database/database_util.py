@@ -170,7 +170,7 @@ def set_color_bounds_for_species_in_database(conn, species_id, color_bounds):
     )
     try:        
         execute_query(conn, query, params)
-        print(f"Color bounds for species_id {species_id} updated successfully.")
+        #rint(f"Color bounds for species_id {species_id} updated successfully.")
     except Exception as e:        
         print(f"Error updating color bounds for species_id {species_id}: {e}")
 

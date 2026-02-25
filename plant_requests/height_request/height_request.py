@@ -19,7 +19,7 @@ def scan_green_blobs(image,
                 color_bounds,
                 open_kernel_size=(5,5),
                 close_kernel_size=(5,5),
-                minimum_area_pixels=200,
+                minimum_area_pixels=100,
                 maximum_area_pixels=100000
                 ):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -42,7 +42,7 @@ def scan_green_blobs(image,
             })
     return plant_blob_list
 
-def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1)):
+def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1), minimum_area_pixels=100):
     W,H = image.shape[1], image.shape[0]
     # ignore x outside of plant_bounds
     if plant_bounds is not None:
@@ -52,11 +52,10 @@ def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1)):
         mask[:, x_min:x_max] = 255
         image = cv2.bitwise_and(image, image, mask=mask)
     
-    plant_blob_list = scan_green_blobs(image, color_bounds)
+    plant_blob_list = scan_green_blobs(image, color_bounds, minimum_area_pixels=minimum_area_pixels)
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    if len(plant_blob_list) == 0:
         # dont stop the program, but still warn the user that no plant was detected, and return None for the heighest pixel and an empty list for the blob list. This way the height request can still be performed, but it will just return a height of 0.
-        warnings.warn("No plant detected in the image with the given color bounds and plant bounds")
+        #arnings.warn("No plant detected in the image with the given color bounds and plant bounds")
     heighest_pixel = None
     mask = np.zeros(hsv.shape[:2], dtype="uint8")
     for plant in plant_blob_list:
@@ -78,7 +77,7 @@ def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1)):
 
 # INTERACTION POINT BETWEEN REQUESTOR AND HEIGHT_REQUEST
 
-def height_request(image, reference_tags, camera_parameters=None):
+def height_request(image, reference_tags, camera_parameters=None, minimum_area_pixels=100):
     if image is None:
         raise ValueError("Input image is None")
     if camera_parameters is None:
@@ -86,7 +85,7 @@ def height_request(image, reference_tags, camera_parameters=None):
     if len(reference_tags) == 0:
         raise ValueError("No reference tags were provided")
     
-    response = estimate_heights_reference_tags(image, reference_tags)
+    response = estimate_heights_reference_tags(image, reference_tags, minimum_area_pixels=minimum_area_pixels)
     
     return response
 """
@@ -107,14 +106,14 @@ def height_request(image, reference_tags, camera_parameters=None):
         }] WITH A LIST OF OTHER RESPONSES
 """
 
-def estimate_heights_reference_tags(image, reference_tags):
+def estimate_heights_reference_tags(image, reference_tags, minimum_area_pixels=100):
     response = []
     for reference_tag in reference_tags:
-        reference_tag_response = estimate_heights_reference_tag(image, reference_tag)
+        reference_tag_response = estimate_heights_reference_tag(image, reference_tag, minimum_area_pixels=minimum_area_pixels)
         response+=reference_tag_response
     return response
 
-def estimate_heights_reference_tag(image, reference_tag):
+def estimate_heights_reference_tag(image, reference_tag, minimum_area_pixels=100):
     response = []
     views = reference_tag["views"]
     
@@ -131,7 +130,7 @@ def estimate_heights_reference_tag(image, reference_tag):
         plant_bounds = (view["image_bound_lower"],view["image_bound_upper"])
         color_bounds = (view["color_bound_lower"],view["color_bound_upper"])
         
-        heighest_green_pixel_info = get_heighest_green_pixel(image, color_bounds, plant_bounds)
+        heighest_green_pixel_info = get_heighest_green_pixel(image, color_bounds, plant_bounds, minimum_area_pixels=minimum_area_pixels)
         heighest_green_pixel = heighest_green_pixel_info["heighest_green_pixel"]
         green_blob_list = heighest_green_pixel_info["green_blob_list"]
         plant_bounds =heighest_green_pixel_info["plant_bounds"]

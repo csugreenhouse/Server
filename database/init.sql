@@ -86,9 +86,6 @@ CREATE TABLE width_view (
 
 -- make a key from plant_id and measured_at to make it easier to query for the most recent height/width log for a plant
 
-Create unique index height_log_plant_id_measured_at_idx on height_log (plant_id, measured_at);
-Create unique index width_log_plant_id_measured_at_idx on width_log (plant_id, measured_at);
-
 Create table height_log (
   height_log_id BIGSERIAL PRIMARY KEY,
   plant_id INT NOT NULL REFERENCES plant(plant_id) ON DELETE CASCADE,
@@ -107,9 +104,30 @@ Create table width_log (
   measured_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+--- there is an error here
+
+--Create unique index height_log_plant_id_measured_at_idx on height_log (plant_id, measured_at);
+--Create unique index width_log_plant_id_measured_at_idx on width_log (plant_id, measured_at);
+
+
 -- =========================
 -- 4) Seed data
 -- =========================
+INSERT INTO camera (
+  ip_address, 
+  width, height, 
+  focal_length_mm, 
+  sensor_height_mm, 
+  sensor_width_mm
+) VALUES
+(
+  '192.168.1.11', 
+  1024, 
+  768, 3.6, 
+  2.2684, 
+  3.590
+);
+
 INSERT INTO species (
   scientific_name,
   common_name,

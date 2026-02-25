@@ -20,15 +20,14 @@ conn = database_util.open_connection_to_database()
 
 
 camera_parameter_list = database_util.get_available_camera_parameters_from_database(conn)
-#this color did not pik up any of the basil. Only dark values(((28, 30, 25), (95, 255, 180))) more colorful green perhaps
-#color_bounds = ((30, 60, 30),(85, 240, 255)) #basil
-#that picks up alot of the baisl, but then also captures alot of grey. 
-#colour_bounds = ((30, 35, 30), (95, 255, 180)) #basil
+
+# HUE - what colors, green is around 60, red is around 0 or 180, blue is around 120
+# SATURATION - how much color vs white, 0 is white, 255 is fully colored
+# VALUE - how much color vs black, 0 is black, 255 is fully bright
 database_util.set_color_bounds_for_species_in_database(conn, 2, ((28, 30, 25), (95, 255, 180))) #lettuce
 database_util.set_color_bounds_for_species_in_database(conn, 3, ((30, 35, 30), (95, 255, 180))) #basil
+database_util.set_color_bounds_for_species_in_database(conn, 1, ((30, 100, 100),(85, 240, 255))) #mint
 database_util.close_connection_to_database(conn)
-
-
 def main():
    while(True):
        print("starting again")
