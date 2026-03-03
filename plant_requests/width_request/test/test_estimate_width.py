@@ -74,22 +74,22 @@ def test_calibration_sheet_multi_plant():
     manual_views = [
         {
             "plant_id": 1, # 2cm
-            "image_bound_lower": 0.30, 
-            "image_bound_upper": 0.45,
+            "image_bounds_x_low": 0.30, 
+            "image_bounds_x_high": 0.45,
             "color_bound_lower": color_bounds[0],
             "color_bound_upper": color_bounds[1]
         },
         {
             "plant_id": 2, #  4cm 
-            "image_bound_lower": 0.45,
-            "image_bound_upper": 0.65,
+            "image_bounds_x_low": 0.45,
+            "image_bounds_x_high": 0.65,
             "color_bound_lower": color_bounds[0],
             "color_bound_upper": color_bounds[1]
         },
         {
             "plant_id": 3, #  8cm 
-            "image_bound_lower": 0.65,
-            "image_bound_upper": 1.0,
+            "image_bounds_x_low": 0.65,
+            "image_bounds_x_high": 1.0,
             "color_bound_lower": color_bounds[0],
             "color_bound_upper": color_bounds[1]
         }

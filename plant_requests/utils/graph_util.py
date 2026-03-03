@@ -166,75 +166,6 @@ def plot_estimated_widths_response(image, out_path, response):
 
 
 
-
-
-
-
-
-
-
-'''
-def plot_height_request_graph_info(image, out_path, graph_info):
-    estimed_heights = graph_info["estimated_heights"]
-    estimated_heights_info = graph_info["estimated_heights_info"]
-    camera_parameters = graph_info["camera_parameters"]
-    
-    # Initialize the graph
-    graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    W,H = graph_rgb.shape[1], graph_rgb.shape[0]
-    fig, ax = plt.subplots()
-    ax.imshow(graph_rgb)
-    ax.axis('on')
-        
-    title_string = ""
-    color_pallet = ['cyan', 'yellow', 'magenta', 'orange', 'pink', 'lime', 'aqua']
-    
-    for i, (estimated_height, estimated_height_info) in enumerate(zip(estimed_heights, estimated_heights_info)):
-        title_string += f"Estimated Height for tag {estimated_height_info['reference_tag']['data']}: {100*estimated_height:.2f} cm \n"
-        color = color_pallet[i % len(color_pallet)]
-        add_estimate_height_graph_info(ax, W, H, estimated_height_info, color=color)
-        #add_tag_displacement_relative_to_camera(ax, W, H, estimated_height_info["reference_tag"], color=color)
-        add_camera_view_frustum(ax, estimated_height_info["heighest_green_pixel"], camera_parameters, estimated_height_info["reference_tag"], color=color)
-    
-    ax.set_title(title_string)
-    ax.title.set_ha('left')
-    ax.title.set_position([0.05, 0.95])
-    
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
-    plt.savefig(str(out_path), bbox_inches="tight")
-    plt.close(fig)
-'''
-'''
-def plot_estimate_heights(image, out_path, response):
-    # Initialize the graph
-    graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    W,H = graph_rgb.shape[1], graph_rgb.shape[0]
-    fig, ax = plt.subplots()
-    ax.imshow(graph_rgb)
-    ax.axis('on')
-    
-    # initialize title string
-    estimated_height = response["estimated_height"]
-    fractional_height = graph_info["fractional_height"]
-    reference_tag = graph_info["reference_tag"]
-    
-    title_string = ""
-    title_string += f"Estimated Height: {100*estimated_height:.2f} cm \n"
-    title_string += f"Fractional Height: {fractional_height} cm \n"
-    title_string += f"Reference Tag ID: {reference_tag['data']} \n"
-    title_string += f"Scale Units (m): {reference_tag['scale_units_m']} \n"
-    title_string += f"Bias Units (m): {reference_tag['bias_units_m']} \n"
-    title_string += f"Color Bounds: {reference_tag['color_bounds'][0]},{reference_tag['color_bounds'][1]} \n"
-    ax.set_title(title_string)
-    ax.title.set_ha('left')
-    ax.title.set_position([0.05, 0.95])
-
-    add_estimate_height_graph_info(ax, W, H, graph_info)
-    
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
-    plt.savefig(str(out_path), bbox_inches="tight")
-    plt.close(fig)
-''' 
 def plot_calculated_displacements_graph_info(image, out_path, reference_tag):
     # Initialize the graph
     graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -424,26 +355,6 @@ def add_point(ax, point, color='blue', size=10):
     x, y = point
     ax.add_patch(plt.Circle((x, y), size, color=color, fill=True))
 
-'''
-def add_tag_offsets(W,H, ax, reference_tag, color='cyan'):
-    displacement_d = reference_tag['displacements']['d']
-    displacement_z = reference_tag['displacements']['z']
-    displacement_x = reference_tag['displacements']['x']
-    displacement_y = reference_tag['displacements']['y']
-    center_x_image = W / 2
-    center_y_image = H / 2
-    center_x_ref = reference_tag['center'][0]
-    center_y_ref = reference_tag['center'][1]
-
-    ax.plot([center_x_image, center_x_ref], [center_y_image, center_y_ref], color=color, linewidth=2)
-    ax.plot([center_x_image, center_x_ref], [center_y_ref, center_y_ref], color=color, linewidth=2)
-    ax.plot([center_x_ref, center_x_ref], [center_y_image, center_y_ref], color=color, linewidth=2)
-
-    ax.plot([], [], color='red', label='Depth Displacement(z)\n %.6f cm' % (displacement_z*100))
-    ax.plot([], [], color='green', label='Horizontal Displacement (x)\n %.6f cm' % (displacement_x*100))
-    ax.plot([], [], color='blue', label='Vertical Displacement (y)\n %.6f cm' % (displacement_y*100))
-    ax.plot([], [], color='black', label='Distance to QR Code (d)\n %.6f cm' % (displacement_d*100))
-'''
 def add_line(ax, equation, color='yellow', linestyle='--', label=None):
     slope, intercept = equation
     x_vals = np.array(ax.get_xlim())

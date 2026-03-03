@@ -32,9 +32,8 @@ def test_height_request_lettuce():
 
     image_names = ["lettuce_1", "lettuce_2", "lettuce_3", "lettuce_4", "lettuce_5", "lettuce_6", "lettuce_7", "lettuce_8", "lettuce_9"]
 
-    estimated_heights_plant_5 = [0.0038, 0.031, 0.041, 0.053, 0.092, 0.089, 0.149, 0.165, 0.179]
-    estimated_heights_plant_6 = [0.012, 0.024, 0.027, 0.039, 0.069, 0.081,  0.120, 0.125, 0.132]
-    minimum_area_pixels = 200
+    estimated_widths_plant_5 = [0.0038, 0.031, 0.041, 0.053, 0.092, 0.089, 0.149, 0.165, 0.179]
+    estimated_widths_plant_6 = [0.012, 0.024, 0.027, 0.039, 0.069, 0.081,  0.120, 0.125, 0.132]
 
     # set the color bounds for the lettuce
     database_util.set_color_bounds_for_species_in_database(test_connection, 2, ((28, 50, 50), (95, 255, 180))) #lettuce
@@ -42,11 +41,11 @@ def test_height_request_lettuce():
     for image_name in image_names:
         image = cv2.imread(str(src / f"{image_name}.jpg"))
         reference_tags = scanner_util.scan_reference_tags(image, test_camera_parameters, test_connection)
-        height_response = height_request.height_request(image, reference_tags, test_camera_parameters, minimum_area_pixels=minimum_area_pixels)
+        height_response = height_request.height_request(image, reference_tags, test_camera_parameters)
         graph_util.plot_height_request_response(image,str(grph / f"{image_name}_out.png"),height_response)
         # only should be .01 off because the height request is only accurate to about 1 cm, and the estimated heights are based on measurements with a ruler which are also only accurate to about 1 cm. So we should be able to get pretty close to the estimated heights, but we should still allow for some error.
-        assert height_response[0]["estimated_height"] == pytest.approx(estimated_heights_plant_5[image_names.index(image_name)], abs=0.01)
-        assert height_response[1]["estimated_height"] == pytest.approx(estimated_heights_plant_6[image_names.index(image_name)], abs=0.01)
+        assert height_response[0]["estimated_height"] == pytest.approx(estimated_widths_plant_5[image_names.index(image_name)], abs=0.01)
+        assert height_response[1]["estimated_height"] == pytest.approx(estimated_widths_plant_6[image_names.index(image_name)], abs=0.01)
 
 # HUE - what colors, green is around 60, red is around 0 or 180, blue is around 120
 # SATURATION - how much color vs white, 0 is white, 255 is fully colored
@@ -63,12 +62,11 @@ def test_height_request_basil():
 
     # set the color bounds for the basil
     database_util.set_color_bounds_for_species_in_database(test_connection, 3, ((28, 100, 90), (150, 255, 200))) #basil
-    minimum_area_pixels = 100
 
     for image_name in image_names:
         image = cv2.imread(str(src / f"{image_name}.jpg"))
         reference_tags = scanner_util.scan_reference_tags(image, test_camera_parameters, test_connection)
-        height_response = height_request.height_request(image, reference_tags, test_camera_parameters, minimum_area_pixels=minimum_area_pixels)
+        height_response = height_request.height_request(image, reference_tags, test_camera_parameters)
         graph_util.plot_height_request_response(image,str(grph / f"{image_name}_out.png"),height_response)
 
         #assert height_response[0]["estimated_height"] == pytest.approx(estimated_heights_plant_3[image_names.index(image_name)], abs=0.01), f"Estimated height for plant 3 in image {image_name} is {height_response[0]['estimated_height']} , but expected {estimated_heights_plant_3[image_names.index(image_name)]}"
