@@ -32,65 +32,6 @@ def plot_reference_tag(image,out_path, reference_tag):
     
 #PLOT THE estimate_heights_reference_tags response from height_request
     
-def plot_estimated_heights_response(image, out_path, response):
-    graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    W,H = graph_rgb.shape[1], graph_rgb.shape[0]
-    fig, ax = plt.subplots()
-    ax.imshow(graph_rgb)
-    ax.axis('on')
-    
-    for i, view_response in enumerate(response):
-        add_tag(ax,view_response["reference_tag"], color=color_pallet[i%len(color_pallet)])
-        color = color_pallet[i%len(color_pallet)]
-        plant_id = view_response["plant_id"]
-        estimated_height = view_response["estimated_height"]
-        green_blob_list = view_response["green_blob_list"]
-        tag_bias = view_response["bias_units_m"]
-        add_point(ax,view_response["heighest_green_pixel"],color="green")
-        add_plant_bounds(ax,W,H,view_response["plant_bounds"],color=color)
-        add_green_blobs(ax,green_blob_list,color)
-        ax.plot([], [], color=color, label=f"plant {plant_id}: {round(estimated_height*100,2)}cm FH {round(view_response['fractional_height']*100,2)}cm \n bias: {round(tag_bias*100,2)}cm")
-        
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
-
-    plt.savefig(str(out_path), bbox_inches="tight")
-    plt.close(fig)
-
-def plot_tags(image, out_path, tags):
-    graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    W,H = graph_rgb.shape[1], graph_rgb.shape[0]
-    fig, ax = plt.subplots()
-    ax.imshow(graph_rgb)
-    ax.axis('on')
-    
-    for i, tag in enumerate(tags):
-        add_tag(ax,tag,color=color_pallet[i%len(color_pallet)])
-        
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
-
-    plt.savefig(str(out_path), bbox_inches="tight")
-    plt.close(fig)
-    
-# Plot the response from heighest_green_pixel in height_request
-
-def plot_heighest_green_pixel_response(image, out_path, response):
-    graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    W,H = graph_rgb.shape[1], graph_rgb.shape[0]
-    fig, ax = plt.subplots()
-    
-    heighest_green_pixel = response["heighest_green_pixel"]
-    green_blob_list = response["green_blob_list"]
-    plant_bounds = response["plant_bounds"]
-    
-    add_point(ax,heighest_green_pixel,color="green")
-    add_plant_bounds(ax,W,H,plant_bounds,color="green")
-    add_green_blobs(ax,green_blob_list)
-    
-    ax.imshow(graph_rgb)
-    ax.axis('on')
-    plt.savefig(str(out_path), bbox_inches="tight")
-    plt.close(fig)
-    
 def plot_height_request_response(image, out_path, response):
     graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     W,H = graph_rgb.shape[1], graph_rgb.shape[0]
@@ -109,7 +50,6 @@ def plot_height_request_response(image, out_path, response):
         ax.plot([], [], color=color, label=
                 f"plant {plant_id}: {round(estimated_height*100,2)}cm FH {round(view_response['fractional_height']*100,2)}cm \n"
                   f"bias: {round(tag_bias*100,2)}cm color bounds: {view_response['color_bounds'][0]},{view_response['color_bounds'][1]}\n")
-                  #f"species_id {view_response['species_id']}")
     
     ax.imshow(graph_rgb)
     ax.axis('on')
@@ -117,10 +57,8 @@ def plot_height_request_response(image, out_path, response):
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
     
-    
-# Plot the response from width_request
 
-def plot_estimated_widths_response(image, out_path, response):
+def plot_widths_request_response(image, out_path, response):
     graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     W,H = graph_rgb.shape[1], graph_rgb.shape[0]
     fig, ax = plt.subplots()
@@ -129,18 +67,14 @@ def plot_estimated_widths_response(image, out_path, response):
     
     for i, view_response in enumerate(response):
         add_tag(ax,view_response["reference_tag"], color=color_pallet[i%len(color_pallet)])#outline tag
-        color = color_pallet[i%len(color_pallet)]#choose color pallett
+        color = color_pallet[i%len(color_pallet)]
         plant_id = view_response["plant_id"]
         estimated_width = view_response["estimated_width"]
         green_blob_list = view_response["green_blob_list"]
-        #tag_bias = view_response["bias_units_m"] #not necessary for width
         add_point(ax, view_response["leftmost_green_pixel"], color="blue")
         add_point(ax, view_response["rightmost_green_pixel"], color="red")
-
-        add_plant_bounds(ax,W,H,view_response["plant_bounds"],color=color)#plant bounds vertical lines.
-
-        add_green_blobs(ax,green_blob_list,color)#draws green blobs around leaves
-
+        add_plant_bounds(ax,W,H,view_response["plant_bounds"],color=color)
+        add_green_blobs(ax,green_blob_list,color)
         ax.plot([], [], color=color, label=f"plant {plant_id}: {round(estimated_width*100,2)}cm FH {round(view_response['fractional_width']*100,2)}cm")
         
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
@@ -148,33 +82,12 @@ def plot_estimated_widths_response(image, out_path, response):
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def plot_calculated_displacements_graph_info(image, out_path, reference_tag):
-    # Initialize the graph
     graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     W,H = graph_rgb.shape[1], graph_rgb.shape[0]
     fig, ax = plt.subplots()
     ax.imshow(graph_rgb)
     ax.axis('on')
-    
-    # initialize title string
 
     add_tag_displacement_relative_to_camera(ax, W, H, reference_tag)
     
@@ -182,60 +95,6 @@ def plot_calculated_displacements_graph_info(image, out_path, reference_tag):
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
 
-def add_estimate_height_graph_info(ax, W, H,graph_info, color='cyan'):
-    try :
-        estimated_height = graph_info["estimated_height"]
-        heighest_green_pixel = graph_info["heighest_green_pixel"]
-        equation_top = graph_info["equation_top"]
-        equation_bottom = graph_info["equation_bottom"]
-        fractional_height = graph_info["fractional_height"]
-        reference_tag = graph_info["reference_tag"]
-        plant_bounds = reference_tag["plant_bounds"]
-    except KeyError as e:
-        raise KeyError(f"Missing key in graph_info: {e}")
-    
-    
-    # plot the reference tag
-    # a good color for the tag would be red
-    add_tag(ax, reference_tag, color=color)
-    # plot lines
-    #add_line(ax, equation_top, color=color2, linestyle='--', label='Top Line of Reference Tag')
-    #add_line(ax, equation_bottom, color=color2, linestyle='--', label='Bottom Line of Reference Tag')
-    # plot the heighest green pixel
-    add_point(ax, heighest_green_pixel, color='green', size=10)
-    # plot plant bounds
-    for width_percent in plant_bounds:
-        x_coordinate = width_percent * W
-        bound_line = get_vertical_line(x_coordinate)
-        add_line(ax, bound_line, color=color, linestyle='-.', label='Plant Bound Line')
-    # plot the green blobs
-    add_green_blobs(ax, graph_info["green_blob_list"], color='lime')
-    # add legend
-    
-def plot_heighest_green_pixel_graph_info(image, out_path, graph_info):
-    # Initialize the graph
-    graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    W,H = graph_rgb.shape[1], graph_rgb.shape[0]
-    fig, ax = plt.subplots()
-    ax.imshow(graph_rgb)
-    ax.axis('on')
-
-    # initialize title string
-    heighest_green_pixel = graph_info["heighest_green_pixel"]
-    green_blob_list = graph_info["green_blob_list"]
-    
-    title_string = ""
-    title_string += f"Heighest Green Pixel: {heighest_green_pixel} \n"
-    ax.set_title(title_string)
-    ax.title.set_ha('left')
-    ax.title.set_position([0.05, 0.95])
-
-    add_point(ax, heighest_green_pixel, color='green', size=10)
-    add_green_blobs(ax, green_blob_list, color='lime')
-    
-    plt.savefig(str(out_path), bbox_inches="tight")
-    plt.close(fig)
-        
 def add_tag_displacement_relative_to_camera(ax, W, H, reference_tag, color=None):
     if color is None:
         color = ['red', 'green', 'blue']
@@ -301,24 +160,6 @@ def add_plant_bounds(ax,W,H,plant_bounds,color):
     add_line(ax, x_lower_line, color=color, linestyle='-.')
     add_line(ax, x_upper_line, color=color, linestyle='-.')
     
-    
-
-def add_view(ax,W,H,view,facecolor='cyan'):
-    lower = view["image_bound_lower"]
-    upper = view["image_bound_upper"]
-    plant_id = view["plant_id"]
-    x = lower*W
-    y = 0
-    width = (upper-lower)*W
-    rect = patches.Rectangle(
-        (x,y),
-        width,
-        H,
-        alpha=0.3,
-        facecolor=facecolor
-    )
-    ax.add_patch(rect)
-    ax.plot([], [], color=facecolor, label=f'bounds for plant_id {plant_id}')
 
 def add_tag(ax, tag, color='cyan', center_size=20):
     try:
@@ -330,7 +171,6 @@ def add_tag(ax, tag, color='cyan', center_size=20):
     except KeyError:
         warnings.warn("Tag corners not found, cannot plot tag.")
         return
-    # add small text in center with tag data also label the corners and say if its top left, top right, bottom right, bottom left
     ax.add_patch(plt.Polygon([tl, tr, br, bl], fill=None, edgecolor=color, linewidth=2))
     cx, cy = tag["center"]
     ax.add_patch(plt.Circle((cx, cy), center_size, color=color, fill=True))
@@ -339,7 +179,6 @@ def add_tag(ax, tag, color='cyan', center_size=20):
     ax.text(tr[0], tr[1], "TR", fontsize=8, ha='center', va='center')
     ax.text(br[0], br[1], "BR", fontsize=8, ha='center', va='center')
     ax.text(bl[0], bl[1], "BL", fontsize=8, ha='center', va='center')
-    # add to legend
     ax.plot([], [], color=color, label=f'Tag ID: {tag["data"]}')
 
 def add_green_blobs(ax, plant_blob_list, color='lime'):

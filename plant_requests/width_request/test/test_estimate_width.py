@@ -53,7 +53,7 @@ def test_estimate_height_6CM():
     reference_tag = reference_util.make_reference_tag(raw_april_tag,test_camera_parameters,scale=test_scale,views=views)
     estimated_width_response =  hr.estimate_widths_reference_tags(image, [reference_tag])
     
-    graph_util.plot_estimated_widths_response(image,dst,estimated_width_response)
+    graph_util.plot_widths_request_response(image,dst,estimated_width_response)
     
     estimated_width = estimated_width_response[0]["estimated_width"]
     assert estimated_width == pytest.approx(.025, rel=.10)
@@ -107,7 +107,7 @@ def test_calibration_sheet_multi_plant():
     estimated_width_response = hr.estimate_widths_reference_tags(image, [reference_tag])
     
     # Output the visualization
-    graph_util.plot_estimated_widths_response(image, dst, estimated_width_response)
+    graph_util.plot_widths_request_response(image, dst, estimated_width_response)
     
     # 2cm plant
     assert estimated_width_response[0]["estimated_width"] == pytest.approx(0.02, abs=0.005)
