@@ -71,8 +71,9 @@ CREATE TABLE view (
   tag_id INT REFERENCES tag(tag_id) ON DELETE CASCADE,
   plant_id INT REFERENCES plant(plant_id) ON DELETE CASCADE,
   view_type view_type_enum NOT NULL,
-  image_bound_upper DECIMAL NOT NULL,
-  image_bound_lower DECIMAL NOT NULL
+  image_bound_x_high DECIMAL NOT NULL,
+  image_bound_x_low DECIMAL NOT NULL,
+  minimum_area_pixels INT NOT NULL DEFAULT 200
 );
 
 CREATE TABLE height_view (
@@ -187,7 +188,7 @@ INSERT INTO tag (tag_id, scale_units_m) VALUES
 (3, 0.07),
 (4, 0.07);
 
-INSERT INTO view (tag_id, plant_id, view_type, image_bound_upper, image_bound_lower) VALUES
+INSERT INTO view (tag_id, plant_id, view_type, image_bound_x_high, image_bound_x_low) VALUES
 -- Tag 4 → Truchas (plants 1,2)
 (4, 1, 'height', 0.5, 0.0),
 (4, 2, 'height', 1.0, 0.5),
@@ -200,9 +201,15 @@ INSERT INTO view (tag_id, plant_id, view_type, image_bound_upper, image_bound_lo
 (2, 5, 'height', 0.5, 0.0),
 (2, 6, 'height', 1.0, .50),
 
--- Tag 1 → Truchas (plants 1,2)
+-- Tag 1 → Lettuce (plants 1,2)
 (1, 1, 'height', 1.0, 0.5),
 (1, 2, 'height', 1.0, 0.0);
+
+Insert Into view (tag_id, plant_id, view_type, image_bound_x_high, image_bound_x_low, minimum_area_pixels) VALUES
+
+-- Tag  2 -> Little Gem (plants 5,6)
+(2, 5, 'width', 0.5, 0.0, 300),
+(2, 6, 'width', 1.0, .50, 300);
 
 INSERT INTO height_view (view_id, bias_units_m) VALUES
 (1, 0.0),

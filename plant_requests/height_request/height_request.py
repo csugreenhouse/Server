@@ -42,7 +42,7 @@ def scan_green_blobs(image,
             })
     return plant_blob_list
 
-def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1), minimum_area_pixels=100):
+def get_heighest_green_pixel(image, color_bounds, plant_bounds, minimum_area_pixels):
     W,H = image.shape[1], image.shape[0]
     # ignore x outside of plant_bounds
     if plant_bounds is not None:
@@ -77,7 +77,9 @@ def get_heighest_green_pixel(image, color_bounds, plant_bounds=(0,1), minimum_ar
 
 # INTERACTION POINT BETWEEN REQUESTOR AND HEIGHT_REQUEST
 
-def height_request(image, reference_tags, camera_parameters=None, minimum_area_pixels=100):
+def height_request(image, reference_tags, camera_parameters=None):
+    # keep views that are only of type height
+    reference_tags = reference_util.filter_reference_tags_by_view_type(reference_tags, "height")
     if image is None:
         raise ValueError("Input image is None")
     if camera_parameters is None:
@@ -85,7 +87,7 @@ def height_request(image, reference_tags, camera_parameters=None, minimum_area_p
     if len(reference_tags) == 0:
         raise ValueError("No reference tags were provided")
     
-    response = estimate_heights_reference_tags(image, reference_tags, minimum_area_pixels=minimum_area_pixels)
+    response = estimate_heights_reference_tags(image, reference_tags)
     
     return response
 """
@@ -106,14 +108,14 @@ def height_request(image, reference_tags, camera_parameters=None, minimum_area_p
         }] WITH A LIST OF OTHER RESPONSES
 """
 
-def estimate_heights_reference_tags(image, reference_tags, minimum_area_pixels=100):
+def estimate_heights_reference_tags(image, reference_tags):
     response = []
     for reference_tag in reference_tags:
-        reference_tag_response = estimate_heights_reference_tag(image, reference_tag, minimum_area_pixels=minimum_area_pixels)
+        reference_tag_response = estimate_heights_reference_tag(image, reference_tag)
         response+=reference_tag_response
     return response
 
-def estimate_heights_reference_tag(image, reference_tag, minimum_area_pixels=100):
+def estimate_heights_reference_tag(image, reference_tag):
     response = []
     views = reference_tag["views"]
     
@@ -127,10 +129,11 @@ def estimate_heights_reference_tag(image, reference_tag, minimum_area_pixels=100
     for view in views:
         plant_id = view["plant_id"]
         bias_units_m = view["bias_units_m"]
-        plant_bounds = (view["image_bound_lower"],view["image_bound_upper"])
+        plant_bounds = (view["image_bounds_x_low"],view["image_bounds_x_high"])
         color_bounds = (view["color_bound_lower"],view["color_bound_upper"])
+        minimum_area_pixels = view["minimum_area_pixels"]
         
-        heighest_green_pixel_info = get_heighest_green_pixel(image, color_bounds, plant_bounds, minimum_area_pixels=minimum_area_pixels)
+        heighest_green_pixel_info = get_heighest_green_pixel(image, color_bounds, plant_bounds, minimum_area_pixels)
         heighest_green_pixel = heighest_green_pixel_info["heighest_green_pixel"]
         green_blob_list = heighest_green_pixel_info["green_blob_list"]
         plant_bounds =heighest_green_pixel_info["plant_bounds"]

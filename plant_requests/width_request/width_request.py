@@ -51,7 +51,7 @@ def scan_green_blobs(image,
     return plant_blob_list
 
 # find max and min pixels in the x axis; this is the main development of this file
-def get_maxmin_x_green_pixel(image, color_bounds, plant_bounds=(0,1)):
+def get_maxmin_x_green_pixel(image, color_bounds, plant_bounds=(0,1), minimum_area_pixels=100):
     W,H = image.shape[1], image.shape[0] # size of the digital canvas.
 
     # this is an image slicer from the reference tag. It segments it vertically, 
@@ -65,7 +65,7 @@ def get_maxmin_x_green_pixel(image, color_bounds, plant_bounds=(0,1)):
         mask[:, x_min:x_max] = 255
         image = cv2.bitwise_and(image, image, mask=mask)
     
-    plant_blob_list = scan_green_blobs(image, color_bounds)
+    plant_blob_list = scan_green_blobs(image, color_bounds, minimum_area_pixels=minimum_area_pixels)
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     if len(plant_blob_list) == 0:
         raise ValueError("No plant detected in the image")
@@ -103,6 +103,7 @@ def get_maxmin_x_green_pixel(image, color_bounds, plant_bounds=(0,1)):
 # Below is the actual width estimation part
 
 def width_request(image, reference_tags, camera_parameters):
+    reference_tags = reference_util.filter_reference_tags_by_view_type(reference_tags, "width")
     # Same errors as height request
     if image is None:
         raise ValueError("Input image is None")
@@ -137,10 +138,12 @@ def estimate_widths_reference_tag(image, reference_tag):
     for view in views: #iterate through every plant in the image
         plant_id = view["plant_id"]
         #bias_units_m = view["bias_units_m"] #bias offset for the bottom y bound, not needed here but only for height
-        plant_bounds = (view["image_bound_lower"],view["image_bound_upper"]) #left and right boundaries in img
+        plant_bounds = (view["image_bounds_x_low"],view["image_bounds_x_high"]) #left and right boundaries in img
         color_bounds = (view["color_bound_lower"],view["color_bound_upper"])
         
-        pixel_info = get_maxmin_x_green_pixel(image, color_bounds, plant_bounds)
+        minimum_area_pixels = view["minimum_area_pixels"] if "minimum_area_pixels" in view else 100
+        
+        pixel_info = get_maxmin_x_green_pixel(image, color_bounds, plant_bounds, minimum_area_pixels=minimum_area_pixels)
         
         left_pixel = pixel_info["leftmost_green_pixel"]
         right_pixel = pixel_info["rightmost_green_pixel"]
@@ -160,14 +163,11 @@ def estimate_widths_reference_tag(image, reference_tag):
             "plant_id": plant_id,
             "estimated_width": estimated_width,
             "fractional_width": fractional_width,
-            #"equation_top": equation_top,
-            #"equation_bottom": equation_bottom,
             "leftmost_green_pixel": left_pixel,
             "rightmost_green_pixel": right_pixel,
             "green_blob_list": pixel_info["green_blob_list"],
             "plant_bounds" :plant_bounds,
             "color_bounds" :color_bounds,
-            #"bias_units_m" : bias_units_m
         }
         
         response.append(view_response)

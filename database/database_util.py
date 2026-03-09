@@ -71,35 +71,15 @@ def close_connection_to_database(conn):
         conn.close() 
 
 def get_tag_views_from_database(conn, tag_id):
-    """query = (
-        "SELECT "
-        "  v.plant_id, "
-        "  v.view_type, "
-        "  v.image_bound_upper, "
-        "  v.image_bound_lower, "
-        "  v.request_type AS view_request_type, "
-        "  s.lower_color_bound_hue, "
-        "  s.lower_color_bound_saturation, "
-        "  s.lower_color_bound_value, "
-        "  s.upper_color_bound_hue, "
-        "  s.upper_color_bound_saturation, "
-        "  s.upper_color_bound_value, "
-        "  hv.bias_units_m AS height_bias_units_m "
-        "FROM \"view\" v "
-        "JOIN plant p ON p.plant_id = v.plant_id "
-        "JOIN species s ON s.species_id = p.species_id "
-        "LEFT JOIN height_view hv ON hv.view_id = v.view_id "
-        "LEFT JOIN width_view wv ON wv.view_id = v.view_id "
-        "WHERE v.tag_id = %s;"
-    ) """
     
     query = (
         "SELECT "
         "v.plant_id, "
         "v.tag_id, "
         "v.view_type, "
-        "v.image_bound_upper, "
-        "v.image_bound_lower, "
+        "v.image_bound_x_high, "
+        "v.image_bound_x_low, "
+        "v.minimum_area_pixels AS minimum_area_pixels, "
         "s.species_id, "
         "s.scientific_name, "
         "s.lower_color_bound_hue, "
@@ -123,26 +103,27 @@ def get_tag_views_from_database(conn, tag_id):
     for results_row in results:
         temp_veiw = (
             {
-            "species_id": results_row[5],
+            "species_id": results_row[6],
             "plant_id": results_row[0],
             "tag_id": results_row[1],
-            "scientific_name": results_row[6],
+            "scientific_name": results_row[7],
             "view_type": results_row[2],
-            "image_bound_upper": float(results_row[3]),
-            "image_bound_lower": float(results_row[4]),
+            "minimum_area_pixels": int(results_row[5]),
+            "image_bounds_x_high": float(results_row[3]),
+            "image_bounds_x_low": float(results_row[4]),
             "color_bound_lower": (
-                float(results_row[7]),
                 float(results_row[8]),
-                float(results_row[9])
+                float(results_row[9]),
+                float(results_row[10])
             ),
             "color_bound_upper": (
-                float(results_row[10]),
                 float(results_row[11]),
-                float(results_row[12])
+                float(results_row[12]),
+                float(results_row[13])
             ),
         })
         if results_row[2] == "height":
-            temp_veiw["bias_units_m"] = float(results_row[13])
+            temp_veiw["bias_units_m"] = float(results_row[14])
         view.append(temp_veiw)
 
     return view

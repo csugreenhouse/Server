@@ -122,7 +122,7 @@ def make_reference_tag(raw_april_tag, camera_parameters, conn=None, scale=None, 
         raise ValueError("Views is None or empty")
 
     for view in views:
-        if view["image_bound_upper"] < view["image_bound_lower"]:
+        if view["image_bounds_x_low"] > view["image_bounds_x_high"]:
             raise ValueError("image bounds in a view are switched")
 
     tag = {
@@ -141,6 +141,16 @@ def make_reference_tag(raw_april_tag, camera_parameters, conn=None, scale=None, 
     }
     return tag
 
+def filter_reference_tags_by_view_type(reference_tags, view_type):
+    filtered_tags = []
+    for tag in reference_tags:
+        filtered_views = [view for view in tag["views"] if view["view_type"] == view_type]
+        if filtered_views:
+            new_tag = tag.copy()
+            new_tag["views"] = filtered_views
+            filtered_tags.append(new_tag)
+    return filtered_tags
+
 
 def add_height_estimation_info_to_tag(april_tag, camera_parameters):
     queried_info = database.get_tag_information_from_database(april_tag, camera_parameters)
@@ -148,7 +158,7 @@ def add_height_estimation_info_to_tag(april_tag, camera_parameters):
     april_tag["bias_units_m"] = queried_info["bias_units_m"]
     april_tag["color_bounds"] = queried_info["color_bounds"]
     april_tag["plant_id"] = queried_info["plant_id"]
-    april_tag["plant_bounds"] = queried_info["plant_bounds"]
+    april_tag["plant_bounds_x"] = queried_info["plant_bounds_x"]
     april_tag["request_type"] = queried_info["request_type"]
     return april_tag
     
@@ -192,8 +202,8 @@ def add_calculated_displacement_info_to_tag(camera_parameters, reference_tag):
 def make_height_view(plant_id, image_bounds, color_bounds, bias_units_m):
     return {"plant_id": plant_id,
             "bias_units_m":bias_units_m,
-            "image_bound_upper": image_bounds[1],
-            "image_bound_lower": image_bounds[0],
+            "image_bounds_x_high": image_bounds[1],
+            "image_bounds_x_low": image_bounds[0],
             "color_bound_upper": color_bounds[1],
             "color_bound_lower": color_bounds[0],
     }
