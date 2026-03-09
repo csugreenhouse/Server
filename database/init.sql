@@ -156,7 +156,13 @@ INSERT INTO species (
   'Basil (Italian Genovese)',
   90, 255, 255,
   30, 60, 60
-);
+),
+(
+  'Mentha spicata',
+  'Mint (Common)',
+  90, 255, 255,
+  30, 60, 60
+)
 
 INSERT INTO plant (plant_id,species_id) VALUES
 -- Truchas (Red Lettuce)
@@ -170,6 +176,10 @@ INSERT INTO plant (plant_id,species_id) VALUES
 -- Little Gem
 (5,2),
 (6,2);
+
+-- Mint
+(7,4),
+(8,4); 
 
 INSERT INTO tag (tag_id, scale_units_m) VALUES
 -- 7 cm is equal to .07m
@@ -210,4 +220,3 @@ INSERT INTO height_view (view_id, bias_units_m) VALUES
 (6, 0.0),
 (7, 0.0),
 (8, 0.0);
-

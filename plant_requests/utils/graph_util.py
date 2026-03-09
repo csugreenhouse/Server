@@ -82,6 +82,22 @@ def plot_widths_request_response(image, out_path, response):
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
 
+#plot blobs alone
+def plot_blobs(image, out_path, blobs):
+    graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    W,H = graph_rgb.shape[1], graph_rgb.shape[0]
+    fig, ax = plt.subplots()
+    ax.imshow(graph_rgb)
+    ax.axis('on')
+
+    color = color_pallet[1%len(color_pallet)]#choose color pallett
+
+    add_green_blobs(ax,blobs,color)#draws green blobs around leaves
+        
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
+
+    plt.savefig(str(out_path), bbox_inches="tight")
+    plt.close(fig)
 def plot_calculated_displacements_graph_info(image, out_path, reference_tag):
     graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     W,H = graph_rgb.shape[1], graph_rgb.shape[0]
