@@ -21,6 +21,18 @@ queries the database and returns the scale of the april tag. will usually be .07
 ### execute_query(conn,query,params=None): results
 responsible for cleaning the inputs of the queries to protect from malicious attacks. you should not call cur.execute(query) without cleaning the inputs of the query. 
 
+| TABLE | FEILDS | DESCRIPTION|
+|-----|------|-------|
+|CAMERA | camera_id_mm, ip_address, width, height, focal_length_mm, sensor_height_mm, sensor_width_mm | holds information on which cameras are in the database. also tells sensor information to predict how far away objects are.|
+|PLANT | plant_id, species_id | This table holds all the necessary information about the plants. each plant has a species id. |
+|SPECIES | species_id, scientific_name, common_name, upper_color_bound_hue, upper_color_bound_saturation, upper_color_bound_value, lower_color_bound_hue, lower_color_bound_saturation, lower_color_bound_value | holds the necessary plant information in the database, such as the approximate color range of each of the plants. |
+| view | view_id, tag_id, plant_id, view_type, image_bound_x_high, image_bound_x_low, minimum_area_pixels | tells image information about the plant for the views/ make sure each view has a corresponding height_view or widht_view in the database. |
+| HEIGHT_VIEW | bias_units_m, veiw_id | contains information that would not be needed in a width view request |
+| WIDTH_VIEW | view_id | contains important infromation for the width type request |
+| HEIGHT_LOG | height_log_id, plant_id, height_units_m, raw_file_path, processed_file_path | a way to keep track of the heights of the plants |
+| WIDTH_LOG | width_log_id, plant_id, height_units_m, raw_file_path, processed_file_path | a way to keep track of the heights of the plants |
+
+
 # plant requests 
 ## REQUESTOR.PY
 This is the main runner of the program. Currently, the main purpose of this program is to capture the image, and then is responsible for storing the image and the appropriate data in the database. Right now, it retreives all cameras from the database, and for each camera ip, captures the image from the ip adress. There are several methods that need to be implemented as well in this file.
