@@ -105,6 +105,39 @@ Create table width_log (
   measured_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE FUNCTION update_height_view()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO height_view (view_id, bias_units_m)
+  VALUES (NEW.view_id, 0.0)
+  ON CONFLICT (view_id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER trigger_update_height_view
+AFTER INSERT ON view
+FOR EACH ROW
+WHEN (NEW.view_type = 'height')
+EXECUTE FUNCTION update_height_view();
+
+CREATE FUNCTION update_width_view()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO width_view (view_id)
+  VALUES (NEW.view_id)
+  ON CONFLICT (view_id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_width_view
+AFTER INSERT ON view
+FOR EACH ROW
+WHEN (NEW.view_type = 'width')
+EXECUTE FUNCTION update_width_view();
+
 --- there is an error here
 
 --Create unique index height_log_plant_id_measured_at_idx on height_log (plant_id, measured_at);
@@ -162,7 +195,7 @@ INSERT INTO species (
   'Mint (Common)',
   90, 255, 255,
   30, 60, 60
-)
+);
 
 INSERT INTO plant (plant_id,species_id) VALUES
 -- Truchas (Red Lettuce)
@@ -175,7 +208,7 @@ INSERT INTO plant (plant_id,species_id) VALUES
 
 -- Little Gem
 (5,2),
-(6,2);
+(6,2),
 
 -- Mint
 (7,4),
@@ -205,18 +238,10 @@ INSERT INTO view (tag_id, plant_id, view_type, image_bound_x_high, image_bound_x
 (1, 1, 'height', 1.0, 0.5),
 (1, 2, 'height', 1.0, 0.0);
 
+--change image_bound_low to image_bound_x_low
+
 Insert Into view (tag_id, plant_id, view_type, image_bound_x_high, image_bound_x_low, minimum_area_pixels) VALUES
 
 -- Tag  2 -> Little Gem (plants 5,6)
 (2, 5, 'width', 0.5, 0.0, 300),
 (2, 6, 'width', 1.0, .50, 300);
-
-INSERT INTO height_view (view_id, bias_units_m) VALUES
-(1, 0.0),
-(2, 0.0),
-(3, 0.0),
-(4, 0.0),
-(5, 0.0),
-(6, 0.0),
-(7, 0.0),
-(8, 0.0);

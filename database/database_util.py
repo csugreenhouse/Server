@@ -205,6 +205,23 @@ def get_most_recent_height_for_plant_id(conn, plant_id):
     else:
         return None
     
+def get_all_heights_for_plant_id(conn, plant_id):
+    query = (
+        "SELECT height_units_m, measured_at "
+        "FROM height_log "
+        "WHERE plant_id = %s "
+        "ORDER BY measured_at DESC;"
+    )
+    results = execute_query(conn, query, (plant_id,))
+    height_logs = []
+    for row in results:
+        height_log = {
+            "height_units_m": float(row[0]),
+            "measured_at": row[1]
+        }
+        height_logs.append(height_log)
+    return height_logs
+    
 def insert_height_response_into_database(conn, view_response,raw_file_path,processed_file_path, timestamp=None):
     query = (
         "INSERT INTO height_log (plant_id, height_units_m, raw_file_path, processed_file_path, measured_at) "
@@ -236,3 +253,12 @@ def insert_width_log_into_database(conn, plant_id, width_m, unproccessed_file_pa
         print(f"Width log for plant_id {plant_id} inserted successfully.")
     except Exception as e:
         print(f"Error inserting width log for plant_id {plant_id}: {e}")
+
+def query_to_CSV_file(results, CSVfile_path):
+    import csv
+    with open(CSVfile_path, mode='w', newline='') as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(results[0].keys())
+        for entry in results:
+            writer.writerow(entry.values())
+        print(CSVfile_path)
