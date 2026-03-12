@@ -53,7 +53,7 @@ def test_estimate_height_6CM():
     reference_tag = reference_util.make_reference_tag(raw_april_tag,test_camera_parameters,scale=test_scale,views=views)
     estimated_width_response =  hr.estimate_widths_reference_tags(image, [reference_tag])
     
-    graph_util.plot_estimated_widths_response(image,dst,estimated_width_response)
+    graph_util.plot_widths_request_response(image,dst,estimated_width_response)
     
     estimated_width = estimated_width_response[0]["estimated_width"]
     assert estimated_width == pytest.approx(.025, rel=.10)
@@ -74,22 +74,22 @@ def test_calibration_sheet_multi_plant():
     manual_views = [
         {
             "plant_id": 1, # 2cm
-            "image_bound_lower": 0.30, 
-            "image_bound_upper": 0.45,
+            "image_bounds_x_low": 0.30, 
+            "image_bounds_x_high": 0.45,
             "color_bound_lower": color_bounds[0],
             "color_bound_upper": color_bounds[1]
         },
         {
             "plant_id": 2, #  4cm 
-            "image_bound_lower": 0.45,
-            "image_bound_upper": 0.65,
+            "image_bounds_x_low": 0.45,
+            "image_bounds_x_high": 0.65,
             "color_bound_lower": color_bounds[0],
             "color_bound_upper": color_bounds[1]
         },
         {
             "plant_id": 3, #  8cm 
-            "image_bound_lower": 0.65,
-            "image_bound_upper": 1.0,
+            "image_bounds_x_low": 0.65,
+            "image_bounds_x_high": 1.0,
             "color_bound_lower": color_bounds[0],
             "color_bound_upper": color_bounds[1]
         }
@@ -107,7 +107,7 @@ def test_calibration_sheet_multi_plant():
     estimated_width_response = hr.estimate_widths_reference_tags(image, [reference_tag])
     
     # Output the visualization
-    graph_util.plot_estimated_widths_response(image, dst, estimated_width_response)
+    graph_util.plot_widths_request_response(image, dst, estimated_width_response)
     
     # 2cm plant
     assert estimated_width_response[0]["estimated_width"] == pytest.approx(0.02, abs=0.005)

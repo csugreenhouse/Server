@@ -17,7 +17,6 @@ IMG_DIR = BASE_DIR / "images" / "test_april_tag"
 reference_util = importlib.import_module("plant_requests.utils.reference_tag_util")
 graph_util = importlib.import_module("plant_requests.utils.graph_util")
 
-
 test_camera_parameters = {
         "width": 1024,
         "height": 768,
@@ -45,8 +44,6 @@ def test_apritag_test01():
     tr = corners["top_right"]
     br = corners["bottom_right"]
     bl = corners["bottom_left"] 
-    
-    graph_util.plot_tags(image, dst, [tag_info])
     
     assert tl == approx((267.1820373534919, 244.1751403808336),rel=1e-3,abs=0.5)
     assert tr == approx((393.2828063964598, 250.85649108888924),rel=1e-3,abs=0.5)
