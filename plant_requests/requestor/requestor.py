@@ -18,8 +18,8 @@ import numpy as np
 
 conn = database_util.open_connection_to_database()
 
-
-camera_parameter_list = database_util.get_available_camera_parameters_from_database(conn)
+#To select only the 6 and 7th element, you would use the following code: database_util.get_available_camera_parameters_from_database(conn)[5:7]
+camera_parameter_list = database_util.get_available_camera_parameters_from_database(conn)[5:7]
 
 # HUE - what colors, green is around 60, red is around 0 or 180, blue is around 120
 # SATURATION - how much color vs white, 0 is white, 255 is fully colored
@@ -99,6 +99,7 @@ def save_image_by_camera_id(camera_id, image):
 def graph_info_by_camera(camera_id, image, camera_parameters, conn):
    try:
        if image is not None:
+           print("here")
            reference_tags = reference_util.scan_reference_tags(image,camera_parameters,conn)
            for reference_tag in reference_tags:
                response = hr.height_request(image, [reference_tag], camera_parameters)
