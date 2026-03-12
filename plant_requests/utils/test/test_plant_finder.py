@@ -28,7 +28,7 @@ reference_util = importlib.import_module("plant_requests.utils.reference_tag_uti
 def test_blobber():
 
     src_path = "plant_requests/utils/test/images/test_plant_finder/twobasil.jpg"
-    dst_path = "plant_requests/utils/test/images/test_plant_finder/twobasiloutput.png"
+    dst_path = "plant_requests/utils/test/images/test_plant_finder/twobasil_out.png"
 
     img = cv2.imread(str(src_path))
     if img is None:
@@ -50,7 +50,7 @@ def test_blobber():
 
 def test_region_grow(): #testing whole image pipeline.
     src_path = "plant_requests/utils/test/images/test_plant_finder/twobasil.jpg"
-    dst_path = "plant_requests/utils/test/images/test_plant_finder/twobasil_grown.png"
+    dst_path = "plant_requests/utils/test/images/test_plant_finder/twobasil_grown_out.png"
 
     img = cv2.imread(str(src_path))
     if img is None:
@@ -198,7 +198,7 @@ def test_more():
 
     for filename, color_bounds, tolerance in test_cases:
         src = IMG_DIR / filename
-        dst = IMG_DIR / filename.replace(".jpg", "_grown.png")
+        dst = IMG_DIR / filename.replace(".jpg", "_grown_out.png")
         run_pipeline_on_image(src, dst, color_bounds, color_tolerance=tolerance)
 
 if __name__ == "__main__":
