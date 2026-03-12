@@ -19,7 +19,7 @@ import numpy as np
 conn = database_util.open_connection_to_database()
 
 #To select only the 6 and 7th element, you would use the following code: database_util.get_available_camera_parameters_from_database(conn)[5:7]
-camera_parameter_list = database_util.get_available_camera_parameters_from_database(conn)[5:7]
+camera_parameter_list = database_util.get_available_camera_parameters_from_database(conn)
 
 # HUE - what colors, green is around 60, red is around 0 or 180, blue is around 120
 # SATURATION - how much color vs white, 0 is white, 255 is fully colored
