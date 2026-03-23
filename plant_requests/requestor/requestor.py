@@ -4,6 +4,12 @@ import time
 import sys
 sys.path.append('/srv/samba/Server')
 import cv2
+#module not found error, to fix: 
+#1. check if the path is correct
+#2. check if there is an __init__.py file in the directory (not strictly necessary in Python 3.3 and above, but can help with recognition)
+#
+sys.path.append('/srv/samba')
+import Warning.sensor as sensor
 
 
 import plant_requests.height_request.height_request as hr
@@ -28,9 +34,16 @@ database_util.set_color_bounds_for_species_in_database(conn, 2, ((28, 30, 25), (
 database_util.set_color_bounds_for_species_in_database(conn, 3, ((30, 35, 30), (95, 255, 180))) #basil
 database_util.set_color_bounds_for_species_in_database(conn, 1, ((30, 100, 100),(85, 240, 255))) #mint
 database_util.close_connection_to_database(conn)
+
 def main():
    while(True):
+       turn_lights_back_off = False
        print("starting again")
+       if (not sensor.are_lights_on()):
+            print("lights are off, turning on")
+            turn_lights_back_off = True
+            sensor.turn_on_lights()
+
        for camera_parameters in camera_parameter_list:
            image = None
            frames = []
@@ -73,6 +86,11 @@ def main():
                print(f"\033[91mfailed to get image from camera {camera_parameters['camera_id']}\033[0m")
           
        print("taking a break")
+
+       if (turn_lights_back_off):
+           print("lights are on, turning off")
+           sensor.turn_off_lights()
+
        # wait 30 for the next round of images and height requests
        time.sleep(1800)
 
