@@ -98,6 +98,7 @@ def plot_blobs(image, out_path, blobs):
 
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
+    
 def plot_calculated_displacements_graph_info(image, out_path, reference_tag):
     graph_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     W,H = graph_rgb.shape[1], graph_rgb.shape[0]
@@ -196,6 +197,7 @@ def add_tag(ax, tag, color='cyan', center_size=20):
     ax.text(br[0], br[1], "BR", fontsize=8, ha='center', va='center')
     ax.text(bl[0], bl[1], "BL", fontsize=8, ha='center', va='center')
     ax.plot([], [], color=color, label=f'Tag ID: {tag["data"]}')
+    
 
 def add_green_blobs(ax, plant_blob_list, color='lime'):
     for blob in plant_blob_list:

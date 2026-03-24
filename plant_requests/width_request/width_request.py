@@ -15,40 +15,14 @@ import plant_requests.utils.reference_tag_util as reference_tag_util
 import plant_requests.utils.line_util as line_util
 import plant_requests.utils.image_util as image_util
 import plant_requests.utils.reference_tag_util as reference_util
+import plant_requests.utils.plant_finder_util as plant_finder_util
+import database.database_util as database_util
 
 #Here begin the helper methods for the width request
 # there are the following:
 #       1. creates bounds of the plant using openCV, the same as the height request. perhaps we can make a place where this can be called so it only needs to be written once.
 #       2. take the green boundaries and determine right and left most pixels
 
-#this method creates the bounds of the plant, primarily leaves. it uses
-# opencv to define the borders in a green color
-def scan_green_blobs(image,
-                color_bounds,
-                open_kernel_size=(5,5),
-                close_kernel_size=(5,5),
-                minimum_area_pixels=500,
-                maximum_area_pixels=100000
-                ):
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, color_bounds[0], color_bounds[1])
-    k_open = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, open_kernel_size)
-    k_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, close_kernel_size)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, k_open)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k_close)
-    numb_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask, connectivity=8)
-    plant_blob_list = []
-    for label in range(1, numb_labels):
-        area = stats[label, cv2.CC_STAT_AREA]
-        if minimum_area_pixels <= area <= maximum_area_pixels:
-            plant_mask = (labels == label).astype("uint8") * 255
-            plant_blob_list.append({
-                "label": label,
-                "centroid": (float(centroids[label][0]), float(centroids[label][1])),
-                "area": int(area),
-                "mask": plant_mask
-            })
-    return plant_blob_list
 
 # find max and min pixels in the x axis; this is the main development of this file
 def get_maxmin_x_green_pixel(image, color_bounds, plant_bounds=(0,1), minimum_area_pixels=100):
@@ -65,7 +39,7 @@ def get_maxmin_x_green_pixel(image, color_bounds, plant_bounds=(0,1), minimum_ar
         mask[:, x_min:x_max] = 255
         image = cv2.bitwise_and(image, image, mask=mask)
     
-    plant_blob_list = scan_green_blobs(image, color_bounds, minimum_area_pixels=minimum_area_pixels)
+    plant_blob_list = plant_finder_util.find_green_blobs(image, color_bounds, minimum_area_pixels=minimum_area_pixels)
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     if len(plant_blob_list) == 0:
         raise ValueError("No plant detected in the image")
@@ -102,13 +76,11 @@ def get_maxmin_x_green_pixel(image, color_bounds, plant_bounds=(0,1), minimum_ar
 
 # Below is the actual width estimation part
 
-def width_request(image, reference_tags, camera_parameters):
+def width_request(image, reference_tags):
     reference_tags = reference_util.filter_reference_tags_by_view_type(reference_tags, "width")
     # Same errors as height request
     if image is None:
         raise ValueError("Input image is None")
-    if camera_parameters is None:
-        raise ValueError("camera_parameters must be provided")
     if len(reference_tags) == 0:
         raise ValueError("No reference tags were provided")
     
