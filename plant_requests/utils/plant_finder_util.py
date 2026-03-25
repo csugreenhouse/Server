@@ -204,7 +204,7 @@ def grow_plant_mask(image, plant_blob_list,
         "grown_mask":      grown_mask,
         "filtered_mask":   grown_mask,
         "kept_blobs":      kept,
-        "discarded_blobs": discarded,
+        "discarded_blobs": discarded
     }
 
 

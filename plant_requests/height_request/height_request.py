@@ -12,35 +12,9 @@ import database.database_util as database_util
 import plant_requests.utils.line_util as line_util
 import plant_requests.utils.image_util as image_util
 import plant_requests.utils.reference_tag_util as reference_util
+import plant_requests.utils.plant_finder_util as plant_finder_util
 
-# THESE ARE HELPERS FOR HEIGHT REQUEST
 
-def scan_green_blobs(image,
-                color_bounds,
-                open_kernel_size=(5,5),
-                close_kernel_size=(5,5),
-                minimum_area_pixels=100,
-                maximum_area_pixels=100000
-                ):
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, color_bounds[0], color_bounds[1])
-    k_open = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, open_kernel_size)
-    k_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, close_kernel_size)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, k_open)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k_close)
-    numb_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask, connectivity=8)
-    plant_blob_list = []
-    for label in range(1, numb_labels):
-        area = stats[label, cv2.CC_STAT_AREA]
-        if minimum_area_pixels <= area <= maximum_area_pixels:
-            plant_mask = (labels == label).astype("uint8") * 255
-            plant_blob_list.append({
-                "label": label,
-                "centroid": (float(centroids[label][0]), float(centroids[label][1])),
-                "area": int(area),
-                "mask": plant_mask
-            })
-    return plant_blob_list
 
 def get_heighest_green_pixel(image, color_bounds, plant_bounds, minimum_area_pixels):
     W,H = image.shape[1], image.shape[0]
@@ -52,38 +26,30 @@ def get_heighest_green_pixel(image, color_bounds, plant_bounds, minimum_area_pix
         mask[:, x_min:x_max] = 255
         image = cv2.bitwise_and(image, image, mask=mask)
     
-    plant_blob_list = scan_green_blobs(image, color_bounds, minimum_area_pixels=minimum_area_pixels)
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        # dont stop the program, but still warn the user that no plant was detected, and return None for the heighest pixel and an empty list for the blob list. This way the height request can still be performed, but it will just return a height of 0.
-        #arnings.warn("No plant detected in the image with the given color bounds and plant bounds")
+    green_blobs = plant_finder_util.find_green_blobs(image, color_bounds, minimum_area_pixels=minimum_area_pixels)
+    mask_result = plant_finder_util.grow_plant_mask(image, green_blobs, color_tolerance=22, anchor_area_fraction=0.75, anchor_max_proximity_px=25)
+    
+    mask = mask_result["filtered_mask"]
     heighest_pixel = None
-    mask = np.zeros(hsv.shape[:2], dtype="uint8")
-    for plant in plant_blob_list:
-        mask = cv2.bitwise_and(mask, plant["mask"])
-        ys, xs = np.where(plant["mask"] > 0)
-        if len(ys) == 0:
-            continue
-        if (heighest_pixel is None) or (np.min(ys) < heighest_pixel[1]):
-            heighest_index = np.argmin(ys)
-            heighest_pixel = (int(xs[heighest_index]), int(ys[heighest_index]))
+    
+    for pixel in np.argwhere(mask > 0):
+        py, px = pixel
+        if (heighest_pixel is None) or (py < heighest_pixel[1]):
+            heighest_pixel = (int(px), int(py))
             
     graph_info = {
         "heighest_green_pixel": heighest_pixel,
-        "green_blob_list": plant_blob_list,
+        "green_blob_list": mask_result["kept_blobs"],
         "plant_bounds": plant_bounds
     }
     
     return graph_info
 
-# INTERACTION POINT BETWEEN REQUESTOR AND HEIGHT_REQUEST
+def height_request(image, reference_tags):
 
-def height_request(image, reference_tags, camera_parameters=None):
-    # keep views that are only of type height
     reference_tags = reference_util.filter_reference_tags_by_view_type(reference_tags, "height")
     if image is None:
         raise ValueError("Input image is None")
-    if camera_parameters is None:
-        raise ValueError("camera_parameters must be provided")
     if len(reference_tags) == 0:
         raise ValueError("No reference tags were provided")
     
@@ -136,7 +102,7 @@ def estimate_heights_reference_tag(image, reference_tag):
         heighest_green_pixel_info = get_heighest_green_pixel(image, color_bounds, plant_bounds, minimum_area_pixels)
         heighest_green_pixel = heighest_green_pixel_info["heighest_green_pixel"]
         green_blob_list = heighest_green_pixel_info["green_blob_list"]
-        plant_bounds =heighest_green_pixel_info["plant_bounds"]
+        plant_bounds = heighest_green_pixel_info["plant_bounds"]
         
         equation_top = line_util.get_equation_of_line(tag_top_left_corner, tag_top_right_corner)
         equation_bottom = line_util.get_equation_of_line(tag_bottom_left_corner, tag_bottom_right_corner)
