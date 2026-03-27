@@ -262,3 +262,23 @@ def query_to_CSV_file(results, CSVfile_path):
         for entry in results:
             writer.writerow(entry.values())
         print(CSVfile_path)
+
+def define_plant_x_bounds_in_database(conn, plant_id, xlow, xhigh):
+    query = (
+        "UPDATE view "
+        "SET image_bound_x_high = %s,"
+        "   image_bound_x_low = %s "
+        "WHERE plant_id = %s;"
+    )
+
+    params = (
+        xhigh,
+        xlow,
+        plant_id
+    )
+    
+    try:        
+        execute_query(conn, query, params)
+        #rint(f"Color bounds for species_id {species_id} updated successfully.")
+    except Exception as e:        
+        print(f"Error updating x bounds for plant {plant_id}: {e}")

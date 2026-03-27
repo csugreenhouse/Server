@@ -120,7 +120,7 @@ def graph_info_by_camera(camera_id, image, camera_parameters, conn):
            print("here")
            reference_tags = reference_util.scan_reference_tags(image,camera_parameters,conn)
            for reference_tag in reference_tags:
-               response = hr.height_request(image, [reference_tag], camera_parameters)
+               response = hr.height_request(image, [reference_tag])
           
            graph_path = f"plant_requests/requestor/{camera_id}_graph.jpg"
            graph_util.plot_height_request_response(image, graph_path,response)
