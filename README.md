@@ -26,7 +26,7 @@ responsible for cleaning the inputs of the queries to protect from malicious att
 |CAMERA | camera_id_mm, ip_address, width, height, focal_length_mm, sensor_height_mm, sensor_width_mm | holds information on which cameras are in the database. also tells sensor information to predict how far away objects are.|
 |PLANT | plant_id, species_id | This table holds all the necessary information about the plants. each plant has a species id. |
 |SPECIES | species_id, scientific_name, common_name, upper_color_bound_hue, upper_color_bound_saturation, upper_color_bound_value, lower_color_bound_hue, lower_color_bound_saturation, lower_color_bound_value | holds the necessary plant information in the database, such as the approximate color range of each of the plants. |
-| view | view_id, tag_id, plant_id, view_type, image_bound_x_high, image_bound_x_low, minimum_area_pixels | tells image information about the plant for the views/ make sure each view has a corresponding height_view or widht_view in the database. |
+| view | view_id, tag_id, plant_id, view_type, image_bound_x_high, image_bound_x_low, minimum_area_pixels,current | tells image information about the plant for the views/ make sure each view has a corresponding height_view or widht_view in the database. current tells if the plant is currently in the plot. |
 | HEIGHT_VIEW | bias_units_m, veiw_id | contains information that would not be needed in a width view request |
 | WIDTH_VIEW | view_id | contains important infromation for the width type request |
 | HEIGHT_LOG | height_log_id, plant_id, height_units_m, raw_file_path, processed_file_path | a way to keep track of the heights of the plants |
@@ -50,6 +50,26 @@ is a debug method, that shows the graph of the relative request of the responses
 plant requests consists of a major portion of the code in the program the plant rrequests files are sorted into area_request, height_request, width_request, and requestor
 # area_request _not yet implemented_
 
+# USEFUL SHORTCUTS
+### adding a new plant 
+type "sudo -u postgres psql" to get to the server. P/W is same as the main password
+\c greenhouse; -- Connect to the greenhouse database
+SELECT * FROM plant; -- View the table
+INSERT INTO plant (plant_id, species_id) VALUES ([your_id], [your_species]); -- Insert the plant into the table, repeat for all plants
+SELECT * FROM plant; -- Ensure the table is correct
+SELECT * FROM tag; -- View the tags
+INSERT INTO tag (tag_id, scale_units_m) VALUES ([your_id], [your_scale]); -- Insert into tag table for each new tag
+SELECT * FROM tag; -- confirm that everything is correct
+SELECT * FROM view; -- View the views
+INSERT INTO view (view_id, tag_id, plant_id, view_type, image_bound_x_high, image_bound_x_low) VALUES ([your_view_id], [your_tag_id], [your_plant_id], 'height', [your_upper_bound], [your_lower_bound]); -- Insert a new view for each new plant
+SELECT * FROM view; -- Ensure everything is correct
+SELECT * FROM height_view; -- View the height view
+INSERT INTO height_view (view_id, bias_units_m) VALUES ([your_view_id], 0); -- update the height view bias *THIS SHOULD HAPPEN AUTOMATICALLY*
+SELECT * FROM height_view; -- Ensure everything is correct
+Run the python script requestor.py to ensure everything works. View the newly made graphs to check if your image bounds are correct (Comment on line 21 gives instructions to only run for desired camera IDs)
+
+### modifying the html webpage
+there is an html webpage for displaying the slider and plant images. The processed and saved images in by_plant located in the images folder in srv is mounted to a html folder that makes it all accessable. to get to this folder, go to /var/www/html. This code is then used as an embedded website inside of home assistant to be able to display plant images.
 
 
 
