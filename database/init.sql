@@ -73,7 +73,8 @@ CREATE TABLE view (
   view_type view_type_enum NOT NULL,
   image_bound_x_high DECIMAL NOT NULL,
   image_bound_x_low DECIMAL NOT NULL,
-  minimum_area_pixels INT NOT NULL DEFAULT 200
+  minimum_area_pixels INT NOT NULL DEFAULT 200,
+  current boolean default true
 );
 
 CREATE TABLE height_view (

@@ -53,7 +53,7 @@ def plot_height_request_response(image, out_path, response):
     
     ax.imshow(graph_rgb)
     ax.axis('on')
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=2)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=1)
     plt.savefig(str(out_path), bbox_inches="tight")
     plt.close(fig)
     
