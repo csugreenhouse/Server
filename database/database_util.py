@@ -94,7 +94,8 @@ def get_tag_views_from_database(conn, tag_id):
         "JOIN species s ON s.species_id = p.species_id "
         "LEFT JOIN height_view hv ON hv.view_id = v.view_id "
         "LEFT JOIN width_view wv ON wv.view_id = v.view_id "
-        "WHERE v.tag_id = %s;"
+        "WHERE v.tag_id = %s "
+        "AND v.current = TRUE;"
     )
 
 

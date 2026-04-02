@@ -36,7 +36,7 @@ def scan_apriltags(image):
     """
     results = scan_raw_tags(image)
 
-    DECISION_MARGIN = 40.0
+    DECISION_MARGIN = 10.0
     valid_tags = []
     
 
@@ -62,7 +62,7 @@ def scan_apriltags(image):
 
     if len(valid_tags) == 0:
         if len(results) != 0:
-            raise ValueError("No valid april tag has been detected, but a non valid one has been found")
+            raise ValueError(f"No valid april tag has been detected, but a non valid one has been found {results[0]}")
         else:
             raise ValueError("No april tags at all have been found")
     return valid_tags
