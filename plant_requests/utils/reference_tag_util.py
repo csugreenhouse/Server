@@ -122,8 +122,10 @@ def make_reference_tag(raw_april_tag, camera_parameters, conn=None, scale=None, 
         raise ValueError("Views is None or empty")
 
     for view in views:
-        if view["image_bounds_x_low"] > view["image_bounds_x_high"]:
-            raise ValueError("image bounds in a view are switched")
+        if view["image_bound_x_low"] > view["image_bound_x_high"]:
+            raise ValueError("image bounds x in a view are switched")
+        if view["image_bound_y_low"] > view["image_bound_y_high"]:
+            raise ValueError("image bounds y in a view are switched")
 
     tag = {
         "data": tag_id,
@@ -202,8 +204,10 @@ def add_calculated_displacement_info_to_tag(camera_parameters, reference_tag):
 def make_height_view(plant_id, image_bounds, color_bounds, bias_units_m):
     return {"plant_id": plant_id,
             "bias_units_m":bias_units_m,
-            "image_bounds_x_high": image_bounds[1],
-            "image_bounds_x_low": image_bounds[0],
+            "image_bound_x_high": image_bounds[1],
+            "image_bound_x_low": image_bounds[0],
+            "image_bound_y_high": image_bounds[3],
+            "image_bound_y_low": image_bounds[2],
             "color_bound_upper": color_bounds[1],
             "color_bound_lower": color_bounds[0],
     }

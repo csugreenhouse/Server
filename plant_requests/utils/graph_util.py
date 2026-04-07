@@ -159,23 +159,20 @@ def add_camera_view_frustum(ax, heighest_green_pixel,camera_parameters, referenc
 def add_plant_bounds(ax,W,H,plant_bounds,color):
     x_lower = plant_bounds[0]*W
     x_upper = plant_bounds[1]*W
+    y_lower = plant_bounds[2]*H
+    y_upper = plant_bounds[3]*H
     
     width = x_upper-x_lower
+    height = y_upper-y_lower
     
     rect = patches.Rectangle(
-        (x_lower,0),
+        (x_lower, y_lower),
         width,
-        H,
-        alpha=0.1,
+        height,
+        alpha=0.2,
         facecolor=color
     )
     ax.add_patch(rect)
-    
-    x_lower_line = get_vertical_line(x_lower)
-    x_upper_line = get_vertical_line(x_upper)
-    
-    add_line(ax, x_lower_line, color=color, linestyle='-.')
-    add_line(ax, x_upper_line, color=color, linestyle='-.')
     
 
 def add_tag(ax, tag, color='cyan', center_size=20):

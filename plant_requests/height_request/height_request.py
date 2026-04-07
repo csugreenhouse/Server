@@ -23,7 +23,9 @@ def get_heighest_green_pixel(image, color_bounds, plant_bounds, minimum_area_pix
         mask = np.zeros((H,W), dtype="uint8")
         x_min = int(max(0, plant_bounds[0]*W))
         x_max = int(min(W-1, plant_bounds[1]*W))
-        mask[:, x_min:x_max] = 255
+        y_min = int(max(0, plant_bounds[2]*H))
+        y_max = int(min(H-1, plant_bounds[3]*H))
+        mask[y_min:y_max, x_min:x_max] = 255
         image = cv2.bitwise_and(image, image, mask=mask)
     
     green_blobs = plant_finder_util.find_green_blobs(image, color_bounds, minimum_area_pixels=minimum_area_pixels)
@@ -95,7 +97,7 @@ def estimate_heights_reference_tag(image, reference_tag):
     for view in views:
         plant_id = view["plant_id"]
         bias_units_m = view["bias_units_m"]
-        plant_bounds = (view["image_bounds_x_low"],view["image_bounds_x_high"])
+        plant_bounds = (view["image_bound_x_low"],view["image_bound_x_high"], view["image_bound_y_low"],view["image_bound_y_high"]) #left and right boundaries in img
         color_bounds = (view["color_bound_lower"],view["color_bound_upper"])
         minimum_area_pixels = view["minimum_area_pixels"]
         

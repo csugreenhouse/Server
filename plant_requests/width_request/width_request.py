@@ -110,7 +110,7 @@ def estimate_widths_reference_tag(image, reference_tag):
     for view in views: #iterate through every plant in the image
         plant_id = view["plant_id"]
         #bias_units_m = view["bias_units_m"] #bias offset for the bottom y bound, not needed here but only for height
-        plant_bounds = (view["image_bounds_x_low"],view["image_bounds_x_high"]) #left and right boundaries in img
+        plant_bounds = (view["image_bound_x_low"],view["image_bound_x_high"],view["image_bound_y_low"],view["image_bound_y_high"]) #left and right boundaries in img
         color_bounds = (view["color_bound_lower"],view["color_bound_upper"])
         
         minimum_area_pixels = view["minimum_area_pixels"] if "minimum_area_pixels" in view else 100

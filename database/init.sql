@@ -69,7 +69,11 @@ CREATE TABLE view (
   view_type view_type_enum NOT NULL,
   image_bound_x_high DECIMAL NOT NULL,
   image_bound_x_low DECIMAL NOT NULL,
+  image_bound_y_high DECIMAL NOT NULL DEFAULT 1.0,
+  image_bound_y_low DECIMAL NOT NULL DEFAULT 0.0,
   minimum_area_pixels INT NOT NULL DEFAULT 200,
+  upper_hsv INTEGER[3] default NULL,
+  lower_hsv INTEGER[3] default NULL,
   current boolean default true
 );
 
@@ -134,6 +138,7 @@ AFTER INSERT ON view
 FOR EACH ROW
 WHEN (NEW.view_type = 'width')
 EXECUTE FUNCTION update_width_view();
+
 
 --- there is an error here
 
@@ -212,7 +217,11 @@ INSERT INTO tag (tag_id, scale_units_m) VALUES
 (1, 0.07),
 (2, 0.07),
 (3, 0.07),
-(4, 0.07);
+(4, 0.07),
+(5, 0.07),
+(6, 0.07),
+(7, 0.07),
+(8, 0.07);
 
 INSERT INTO view (tag_id, plant_id, view_type, image_bound_x_high, image_bound_x_low) VALUES
 -- Tag 4 → Truchas (plants 1,2)
@@ -239,16 +248,3 @@ Insert Into view (tag_id, plant_id, view_type, image_bound_x_high, image_bound_x
 (2, 5, 'width', 0.5, 0.0, 300),
 (2, 6, 'width', 1.0, .50, 300);
 
-
--- in live database, we need to update the color bounds. to do this, first we need to make a new column called 
--- lower_hsv and upper_hsv that are arrays of 3 integers (hue, saturation, value) for each of the upper and lower bounds. 
---then we can update those columns with the existing color bounds and delete the old color bound columns. 
--- finally, we can update the code to use the new columns instead of the old ones.
--- command to add new columns:
--- ALTER TABLE species ADD COLUMN lower_hsv INTEGER[3] NOT NULL DEFAULT ARRAY[0,0,0];
--- ALTER TABLE species ADD COLUMN upper_hsv INTEGER[3] NOT NULL DEFAULT ARRAY[0,0,0];
--- command to update new columns with existing color bounds:
--- UPDATE species SET lower_hsv = ARRAY[lower_color_bound_hue, lower_color_bound_saturation, lower_color_bound_value], upper_hsv = ARRAY[upper_color_bound_hue, upper_color_bound_saturation, upper_color_bound_value];
--- command to drop old columns:
--- ALTER TABLE species DROP COLUMN lower_color_bound_hue;
--- ALTER TABLE species DROP COLUMN lower_color_bound_saturation;

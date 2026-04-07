@@ -35,7 +35,7 @@ def test_blobber():
         raise FileNotFoundError(f"Src path missing {src_path}.")
 
     plastic_color_bounds = ((31, 50, 50), (75, 255, 200))
-    plant_bounds = (.35, .6)
+    plant_bounds = (.35, .6, 0, 1)
     plant_id = 1
     bias = .01
 

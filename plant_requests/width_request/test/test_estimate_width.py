@@ -42,7 +42,7 @@ def test_estimate_height_6CM():
     dst = IMG_DIR / "test_6cm_out.png"
     image = cv2.imread(str(src))
     color_bounds = plastic_color_bounds
-    plant_bounds = (.35, .6)
+    plant_bounds = (.35, .6, 0, 1)
     plant_id = 1
     bias = .01
 
@@ -74,22 +74,28 @@ def test_calibration_sheet_multi_plant():
     manual_views = [
         {
             "plant_id": 1, # 2cm
-            "image_bounds_x_low": 0.30, 
-            "image_bounds_x_high": 0.45,
+            "image_bound_x_low": 0.30, 
+            "image_bound_x_high": 0.45,
+            "image_bound_y_low": 0.0,
+            "image_bound_y_high": 1.0,
             "color_bound_lower": color_bounds[0],
             "color_bound_upper": color_bounds[1]
         },
         {
             "plant_id": 2, #  4cm 
-            "image_bounds_x_low": 0.45,
-            "image_bounds_x_high": 0.65,
+            "image_bound_x_low": 0.45,
+            "image_bound_x_high": 0.65,
+            "image_bound_y_low": 0.0,
+            "image_bound_y_high": 1.0,
             "color_bound_lower": color_bounds[0],
             "color_bound_upper": color_bounds[1]
         },
         {
             "plant_id": 3, #  8cm 
-            "image_bounds_x_low": 0.65,
-            "image_bounds_x_high": 1.0,
+            "image_bound_x_low": 0.65,
+            "image_bound_x_high": 1.0,
+            "image_bound_y_low": 0.0,
+            "image_bound_y_high": 1.0,
             "color_bound_lower": color_bounds[0],
             "color_bound_upper": color_bounds[1]
         }

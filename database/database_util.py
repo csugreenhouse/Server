@@ -79,6 +79,8 @@ def get_tag_views_from_database(conn, tag_id):
         "v.view_type, "
         "v.image_bound_x_high, "
         "v.image_bound_x_low, "
+        "v.image_bound_y_high, "
+        "v.image_bound_y_low, "
         "v.minimum_area_pixels AS minimum_area_pixels, "
         "s.species_id, "
         "s.scientific_name, "
@@ -104,27 +106,29 @@ def get_tag_views_from_database(conn, tag_id):
     for results_row in results:
         temp_veiw = (
             {
-            "species_id": results_row[6],
+            "species_id": results_row[8],
             "plant_id": results_row[0],
             "tag_id": results_row[1],
-            "scientific_name": results_row[7],
+            "scientific_name": results_row[9],
             "view_type": results_row[2],
-            "minimum_area_pixels": int(results_row[5]),
-            "image_bounds_x_high": float(results_row[3]),
-            "image_bounds_x_low": float(results_row[4]),
+            "minimum_area_pixels": int(results_row[7]),
+            "image_bound_x_high": float(results_row[3]),
+            "image_bound_x_low": float(results_row[4]),
+            "image_bound_y_high": float(results_row[5]),
+            "image_bound_y_low": float(results_row[6]),
             "color_bound_lower": (
-                float(results_row[8]),
-                float(results_row[9]),
-                float(results_row[10])
+                float(results_row[10]),
+                float(results_row[11]),
+                float(results_row[12])
             ),
             "color_bound_upper": (
-                float(results_row[11]),
-                float(results_row[12]),
-                float(results_row[13])
+                float(results_row[13]),
+                float(results_row[14]),
+                float(results_row[15])
             ),
         })
         if results_row[2] == "height":
-            temp_veiw["bias_units_m"] = float(results_row[14])
+            temp_veiw["bias_units_m"] = float(results_row[16])
         view.append(temp_veiw)
 
     return view

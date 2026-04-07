@@ -7,8 +7,10 @@ def split_by_views(image, view):
     W, H = image.shape[1], image.shape[0]
     x_start = int(view["image_bound_lower"] * W)
     x_end   = int(view["image_bound_upper"] * W)
-    bounds  = (x_start, 0, x_end - x_start, H)
-    crop    = image[0:H, x_start:x_end]
+    y_start = int(view["image_bound_lower"] * H)
+    y_end   = int(view["image_bound_upper"] * H)
+    bounds  = (x_start, y_start, x_end - x_start, y_end - y_start)
+    crop    = image[y_start:y_end, x_start:x_end]
     return crop, bounds
 
 
