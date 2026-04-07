@@ -37,12 +37,8 @@ CREATE TABLE species (
   species_id SERIAL PRIMARY KEY,
   scientific_name VARCHAR(128) NOT NULL UNIQUE,
   common_name VARCHAR(128),
-  upper_color_bound_hue INT NOT NULL,
-  upper_color_bound_saturation INT NOT NULL,
-  upper_color_bound_value INT NOT NULL,
-  lower_color_bound_hue INT NOT NULL,
-  lower_color_bound_saturation INT NOT NULL,
-  lower_color_bound_value INT NOT NULL
+  upper_hsv INTEGER[3] NOT NULL,
+  lower_hsv INTEGER[3] NOT NULL
 );
 
 CREATE TABLE camera (
@@ -166,36 +162,32 @@ INSERT INTO camera (
 INSERT INTO species (
   scientific_name,
   common_name,
-  upper_color_bound_hue,
-  upper_color_bound_saturation,
-  upper_color_bound_value,
-  lower_color_bound_hue,
-  lower_color_bound_saturation,
-  lower_color_bound_value
+  upper_hsv,
+  lower_hsv
 ) VALUES
 (
   'Lactuca sativa (Truchas)',
   'Red Lettuce (Truchas)',
-  179, 255, 255,
-  150, 50, 50
+  ARRAY[179, 255, 255],
+  ARRAY[150, 50, 50]
 ),
 (
   'Lactuca sativa (Little Gem)',
   'Mini Romaine Lettuce (Little Gem)',
-  80, 255, 255,
-  35, 40, 40
+  ARRAY[80, 255, 255],
+  ARRAY[35, 40, 40]
 ),
 (
   'Ocimum basilicum',
   'Basil (Italian Genovese)',
-  90, 255, 255,
-  30, 60, 60
+  ARRAY[90, 255, 255],
+  ARRAY[30, 60, 60]
 ),
 (
   'Mentha spicata',
   'Mint (Common)',
-  90, 255, 255,
-  30, 60, 60
+  ARRAY[90, 255, 255],
+  ARRAY[30, 60, 60]
 );
 
 INSERT INTO plant (plant_id,species_id) VALUES
@@ -246,3 +238,17 @@ Insert Into view (tag_id, plant_id, view_type, image_bound_x_high, image_bound_x
 -- Tag  2 -> Little Gem (plants 5,6)
 (2, 5, 'width', 0.5, 0.0, 300),
 (2, 6, 'width', 1.0, .50, 300);
+
+
+-- in live database, we need to update the color bounds. to do this, first we need to make a new column called 
+-- lower_hsv and upper_hsv that are arrays of 3 integers (hue, saturation, value) for each of the upper and lower bounds. 
+--then we can update those columns with the existing color bounds and delete the old color bound columns. 
+-- finally, we can update the code to use the new columns instead of the old ones.
+-- command to add new columns:
+-- ALTER TABLE species ADD COLUMN lower_hsv INTEGER[3] NOT NULL DEFAULT ARRAY[0,0,0];
+-- ALTER TABLE species ADD COLUMN upper_hsv INTEGER[3] NOT NULL DEFAULT ARRAY[0,0,0];
+-- command to update new columns with existing color bounds:
+-- UPDATE species SET lower_hsv = ARRAY[lower_color_bound_hue, lower_color_bound_saturation, lower_color_bound_value], upper_hsv = ARRAY[upper_color_bound_hue, upper_color_bound_saturation, upper_color_bound_value];
+-- command to drop old columns:
+-- ALTER TABLE species DROP COLUMN lower_color_bound_hue;
+-- ALTER TABLE species DROP COLUMN lower_color_bound_saturation;

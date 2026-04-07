@@ -82,12 +82,12 @@ def get_tag_views_from_database(conn, tag_id):
         "v.minimum_area_pixels AS minimum_area_pixels, "
         "s.species_id, "
         "s.scientific_name, "
-        "s.lower_color_bound_hue, "
-        "s.lower_color_bound_saturation, "
-        "s.lower_color_bound_value, "
-        "s.upper_color_bound_hue, "
-        "s.upper_color_bound_saturation, "
-        "s.upper_color_bound_value, "
+        "s.lower_hsv[1], "
+        "s.lower_hsv[2], "
+        "s.lower_hsv[3], "
+        "s.upper_hsv[1], "
+        "s.upper_hsv[2],  "
+        "s.upper_hsv[3], "
         "hv.bias_units_m AS height_bias_units_m "
         "FROM \"view\" v "
         "JOIN plant p ON p.plant_id = v.plant_id "
@@ -132,12 +132,8 @@ def get_tag_views_from_database(conn, tag_id):
 def set_color_bounds_for_species_in_database(conn, species_id, color_bounds):
     query = (
         "UPDATE species "
-        "SET lower_color_bound_hue = %s, "
-        "    lower_color_bound_saturation = %s, "
-        "    lower_color_bound_value = %s, "
-        "    upper_color_bound_hue = %s, "
-        "    upper_color_bound_saturation = %s, "
-        "    upper_color_bound_value = %s "
+        "SET lower_hsv = ARRAY[%s, %s, %s], "
+        "    upper_hsv = ARRAY[%s, %s, %s] "
         "WHERE species_id = %s;"
     )
     
