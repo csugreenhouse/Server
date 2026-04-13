@@ -66,8 +66,8 @@ connupdate = database_util.open_connection_to_database()
 #database_util.define_plant_x_bounds_in_database(conn=connupdate, plant_id = 13, xlow=.75, xhigh=1)
 #color_bounds = ((30, 110, 110),(90, 240, 255)) #mint
 #good, but picking up to much grey. 
-color_bounds = ((30, 150, 110),(90, 240, 255)) #mint
-database_util.set_color_bounds_for_species_in_database(conn=connupdate, species_id=1, color_bounds=((30, 110, 110),(90, 240, 255))) #mint
-database_util.close_connection_to_database(connupdate)
+#color_bounds = ((30, 150, 110),(90, 240, 255)) #mint
+#database_util.set_color_bounds_for_species_in_database(conn=connupdate, species_id=1, color_bounds=((30, 110, 110),(90, 240, 255))) #mint
+#database_util.close_connection_to_database(connupdate)
 
-process_images_of_plant(14, "20260321 12:00:00")
+process_images_of_plant(3)

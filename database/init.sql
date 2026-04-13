@@ -77,6 +77,12 @@ CREATE TABLE view (
   current boolean default true
 );
 
+-- query statment to add upper_hsv and lower_hsv to view for easier querying of color bounds for height/width requests
+-- ALTER TABLE view ADD COLUMN upper_hsv INTEGER[3] default NULL;
+--ALTER TABLE view ADD COLUMN lower_hsv INTEGER[3] default NULL;
+-- comand to give all views in the database the same color bounds as their species (can be edited later for specific views if needed)
+
+
 CREATE TABLE height_view (
   view_id BIGINT PRIMARY KEY REFERENCES view(view_id) ON DELETE CASCADE,
   bias_units_m DECIMAL NOT NULL
@@ -248,3 +254,4 @@ Insert Into view (tag_id, plant_id, view_type, image_bound_x_high, image_bound_x
 (2, 5, 'width', 0.5, 0.0, 300),
 (2, 6, 'width', 1.0, .50, 300);
 
+-- create color
