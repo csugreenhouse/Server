@@ -67,11 +67,14 @@ def main():
                conn = database_util.open_connection_to_database()
                #save for each plant id in the image
                if image is not None:
-                   reference_tags = reference_util.scan_reference_tags(image,camera_parameters,conn)
-                   for reference_tag in reference_tags:
-                       views = reference_tag["views"]
-                       for view in views:
-                           save_image_by_plant_id(view["plant_id"], image)
+                   time_stamp = image_util.time_stamp()
+                   reference_tags = reference_util.scan_reference_tags(image,camera_parameters,conn, current_only=True)
+                   height_request_response = hr.height_request(image, reference_tags)
+                   for response in height_request_response:
+                       plant_id = response["plant_id"]
+                       raw_file_path = save_image_by_plant_id(plant_id, image)
+
+
                print(f"image successfully saved by plant id and camera number")
 
 
@@ -118,7 +121,7 @@ def graph_info_by_camera(camera_id, image, camera_parameters, conn):
    try:
        if image is not None:
            print("here")
-           reference_tags = reference_util.scan_reference_tags(image,camera_parameters,conn)
+           reference_tags = reference_util.scan_reference_tags(image,camera_parameters,conn, current_only=True)
            for reference_tag in reference_tags:
                response = hr.height_request(image, [reference_tag])
           

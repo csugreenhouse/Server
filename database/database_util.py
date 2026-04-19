@@ -4,6 +4,7 @@ import sys
 
 sys.path.append('/srv/samba/Server')
 
+from datetime import datetime
 import psycopg2
 import os
 import json
@@ -70,7 +71,7 @@ def close_connection_to_database(conn):
     if conn:
         conn.close() 
 
-def get_tag_views_from_database(conn, tag_id):
+def get_tag_views_from_database(conn, tag_id, current_only=False):
     
     query = (
         "SELECT "
@@ -97,7 +98,7 @@ def get_tag_views_from_database(conn, tag_id):
         "LEFT JOIN height_view hv ON hv.view_id = v.view_id "
         "LEFT JOIN width_view wv ON wv.view_id = v.view_id "
         "WHERE v.tag_id = %s "
-        "AND v.current = TRUE;"
+        + ("AND v.current = TRUE ;" if current_only else ";")
     )
 
 
@@ -194,7 +195,7 @@ def get_most_recent_height_for_plant_id(conn, plant_id):
         "SELECT height_units_m, measured_at "
         "FROM height_log "
         "WHERE plant_id = %s "
-        "ORDER BY measured_at DESC "
+        "ORDER BY measured_at ASC "
         "LIMIT 1;"
     )
     results = execute_query(conn, query, (plant_id,))
@@ -211,7 +212,7 @@ def get_all_heights_for_plant_id(conn, plant_id):
         "SELECT height_units_m, measured_at "
         "FROM height_log "
         "WHERE plant_id = %s "
-        "ORDER BY measured_at DESC;"
+        "ORDER BY measured_at ASC;"
     )
     results = execute_query(conn, query, (plant_id,))
     height_logs = []
@@ -223,7 +224,7 @@ def get_all_heights_for_plant_id(conn, plant_id):
         height_logs.append(height_log)
     return height_logs
     
-def insert_height_response_into_database(conn, view_response,raw_file_path,processed_file_path, timestamp=None):
+def insert_height_response_into_database(conn, view_response,raw_file_path,processed_file_path, time_stamp=None):
     query = (
         "INSERT INTO height_log (plant_id, height_units_m, raw_file_path, processed_file_path, measured_at) "
         "VALUES (%s, %s, %s, %s, %s);"
@@ -233,7 +234,7 @@ def insert_height_response_into_database(conn, view_response,raw_file_path,proce
         float(view_response["estimated_height"]),
         raw_file_path,
         processed_file_path,
-        timestamp.split('.')[0] if timestamp else 'NOW()'
+        'NOW()' if time_stamp==None else datetime.fromtimestamp(time_stamp)
     )
     try:
         execute_query(conn, query, params)
@@ -283,3 +284,14 @@ def define_plant_x_bounds_in_database(conn, plant_id, xlow, xhigh):
         #rint(f"Color bounds for species_id {species_id} updated successfully.")
     except Exception as e:        
         print(f"Error updating x bounds for plant {plant_id}: {e}")
+
+def delete_height_log_entries_for_plant_id(conn, plant_id):
+    query = (
+        "DELETE FROM height_log "
+        "WHERE plant_id = %s;"
+    )
+    try:
+        execute_query(conn, query, (plant_id,))
+        print(f"Height log entries for plant_id {plant_id} deleted successfully.")
+    except Exception as e:
+        print(f"Error deleting height log entries for plant_id {plant_id}: {e}")

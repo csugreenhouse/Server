@@ -27,6 +27,7 @@ def find_green_blobs(image,
                      maximum_area_pixels=100000):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     hsv_mask = cv2.inRange(hsv, color_bounds[0], color_bounds[1])
+    
 
     img_f = image.astype(np.float32)
     B, G, R = cv2.split(img_f)# below I put a further categorization to remove stuff that is not super green

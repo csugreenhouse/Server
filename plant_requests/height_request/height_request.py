@@ -97,7 +97,7 @@ def estimate_heights_reference_tag(image, reference_tag):
     for view in views:
         plant_id = view["plant_id"]
         bias_units_m = view["bias_units_m"]
-        plant_bounds = (view["image_bound_x_low"],view["image_bound_x_high"], view["image_bound_y_low"],view["image_bound_y_high"]) #left and right boundaries in img
+        plant_bounds = (view["image_bound_x_low"],view["image_bound_x_high"], view["image_bound_y_low"], view["image_bound_y_high"])
         color_bounds = (view["color_bound_lower"],view["color_bound_upper"])
         minimum_area_pixels = view["minimum_area_pixels"]
         

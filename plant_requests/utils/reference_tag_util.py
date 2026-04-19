@@ -67,7 +67,7 @@ def scan_apriltags(image):
             raise ValueError("No april tags at all have been found")
     return valid_tags
 
-def scan_reference_tags(image, camera_parameters, conn):
+def scan_reference_tags(image, camera_parameters, conn, current_only=False):
     results = scan_raw_tags(image)
     
     DECISION_MARGIN = 40.0
@@ -77,18 +77,18 @@ def scan_reference_tags(image, camera_parameters, conn):
     for raw_tag in results:
         #print(f"TAG ID {tag.tag_id} with decision margin {tag.decision_margin}")
         if (raw_tag.decision_margin>DECISION_MARGIN):
-            reference_tag = make_reference_tag(raw_tag,camera_parameters,conn)
+            reference_tag = make_reference_tag(raw_tag,camera_parameters,conn, current_only)
             reference_tags.append(reference_tag)    
     
     if (len(reference_tags)==0):
         if (len(results)!=0):
-            raise ValueError(f"No Valid april tag has been detected, but a non valid one has been found")
+            raise ValueError(f"No Valid reference tag has been detected, but a non valid one has been found")
         else:
-            raise ValueError(f"No april tags at all have been found")
+            raise ValueError(f"No reference tags at all have been found")
   
     return reference_tags
 
-def make_reference_tag(raw_april_tag, camera_parameters, conn=None, scale=None, views=None):
+def make_reference_tag(raw_april_tag, camera_parameters, conn, current_only, scale=None, views=None):
     # if no connection is passed, ensure that scales and views are populated.
     if (conn is None):
         if scale is None or views is None:
@@ -98,7 +98,7 @@ def make_reference_tag(raw_april_tag, camera_parameters, conn=None, scale=None, 
     tag_id = int(raw_april_tag.tag_id)
     
     scale = scale if scale is not None else database_util.get_tag_scale_from_database(conn, tag_id)
-    views = views if views is not None else database_util.get_tag_views_from_database(conn, tag_id)
+    views = views if views is not None else database_util.get_tag_views_from_database(conn, tag_id, current_only=current_only)
         
     # Ensure numpy arrays -> tuples (JSON safe)
     corners_np = np.asarray(raw_april_tag.corners, dtype=np.float32)
@@ -147,6 +147,16 @@ def filter_reference_tags_by_view_type(reference_tags, view_type):
     filtered_tags = []
     for tag in reference_tags:
         filtered_views = [view for view in tag["views"] if view["view_type"] == view_type]
+        if filtered_views:
+            new_tag = tag.copy()
+            new_tag["views"] = filtered_views
+            filtered_tags.append(new_tag)
+    return filtered_tags
+
+def filter_reference_tags_only_current(reference_tags):
+    filtered_tags = []
+    for tag in reference_tags:
+        filtered_views = [view for view in tag["views"] if view[""] is not None]
         if filtered_views:
             new_tag = tag.copy()
             new_tag["views"] = filtered_views
