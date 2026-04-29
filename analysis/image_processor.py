@@ -12,6 +12,56 @@ import plant_requests.utils.reference_tag_util as reference_tag_util
 import plant_requests.utils.graph_util as gu
 import database.database_util as database_util
 
+def process_one_image_of_plant(plant_id, image_path):
+    # open database connection and get camera parameters
+    conn = database_util.open_connection_to_database()
+    camera_parameters = database_util.get_available_camera_parameters_from_database(conn)[0]
+
+    file_path = image_path
+
+    processed_folder_path = f"/srv/samba/plants/image/by_plant/plant{plant_id}/processed/"
+    Path(processed_folder_path).mkdir(parents=True, exist_ok=True)
+
+    # get the timestame from the file name, which is in the format "20260318_120000.jpg"
+    time_stamp = time.mktime(time.strptime(file_path.rsplit("/",1)[-1].split(".")[0], "%Y%m%d_%H%M%S"))
+
+    image_name = file_path.rsplit("/",1)[-1]
+
+    processed_file_path = processed_folder_path + image_name
+    image = cv2.imread(file_path)
+
+    # try to scan reference tags
+    try:
+        reference_tags = reference_tag_util.scan_reference_tags(image, camera_parameters, conn)
+    except Exception as e:
+        print(f"failed to scan reference tags for plant {plant_id} for file /srv/samba/plants/image/by_plant/plant{plant_id}/{image_name}")
+        print(f"error: {e}")
+
+    # filter the views in the reference tag so you dont do uneccessary work
+    filtered_views = [view for view in reference_tags[0]["views"] if view["plant_id"]==plant_id]
+    reference_tags[0]["views"] = filtered_views
+
+    if (not filtered_views):
+        print("OLD IMAGE OR NO RESPONSE TO BE PLOTTED")
+
+    # if there is one reference tag, try to process the height request and graph the results
+    if (len(reference_tags)==1):
+        try:
+            height_request_response = hr.height_request(image, reference_tags)
+            #filtered_list = [response for response in height_request_response if response["plant_id"] == plant_id]
+            database_util.insert_height_response_into_database(conn=conn, view_response=height_request_response[0], raw_file_path=file_path+image_name, processed_file_path=processed_file_path, time_stamp=time_stamp)
+
+            gu.plot_height_request_response(image, processed_file_path, height_request_response)
+        except Exception as e:
+            print(f"failed to process image for plant {plant_id} for file /srv/samba/plants/image/by_plant/plant{plant_id}/{image_name}")
+            print(f"error: {e}")
+            # display failure
+    else:
+        print(f"more than one or no reference tag found for plant {plant_id} for file /srv/samba/plants/image/by_plant/plant{plant_id}/{image_name}")
+        # display failure
+    database_util.close_connection_to_database(conn)
+
+    return processed_file_path
 
 def process_images_of_plant(plant_id, beginning_date= None, ending_date=None):
     # to make terminal output red for warnings, you can use the following code to print the warning in red text
@@ -107,7 +157,7 @@ def process_images_of_plant(plant_id, beginning_date= None, ending_date=None):
 #process_images_of_plant(5)
 #process_images_of_plant(3, ending_date="20260212 12:00:00")
 #process_images_of_plant(9, beginning_date="20260411 12:00:00")
-process_images_of_plant(10, beginning_date="20260406 12:00:00")
+#process_images_of_plant(10, beginning_date="20260406 12:00:00")
 #process_images_of_plant(11, beginning_date="20260308 12:00:00")
 #process_images_of_plant(12, beginning_date="20260308 12:00:00", ending_date="20260326 12:00:00")
 #process_images_of_plant(13, beginning_date="20260326 12:00:00")
