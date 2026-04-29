@@ -17,6 +17,11 @@ import plant_requests.utils.plant_finder_util as plant_finder_util
 
 
 def get_heighest_green_pixel(image, color_bounds, plant_bounds, minimum_area_pixels):
+    
+    raw_mask = plant_finder_util.find_green_blobs(image, color_bounds, minimum_area_pixels=minimum_area_pixels)
+    
+    
+    
     W,H = image.shape[1], image.shape[0]
     # ignore x outside of plant_bounds
     if plant_bounds is not None:
