@@ -6,6 +6,9 @@ sys.path.append('/srv/samba/Server')
 import database.database_util as db_util
 import pandas as pd
 import cv2
+import math
+
+from datetime import timedelta
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -76,11 +79,35 @@ def generate_height_graph_for_plant_id(plant_id, display_graph=False, clean_data
 
     print(df["measured_at"][2])
 
-    plt.scatter(pd.to_datetime(df["measured_at"], utc=True), df["height_units_m"]*100, s=10, color='forestgreen')
-    plt.scatter(pd.to_datetime(dfdiscard["measured_at"], utc=True), dfdiscard["height_units_m"]*100, s=10, color='goldenrod')
+    plt.scatter(pd.to_datetime(df["measured_at"], utc=True), df["height_units_m"]*100, s=10, color='forestgreen', label= "Acceptable Data")
+    plt.scatter(pd.to_datetime(dfdiscard["measured_at"], utc=True), dfdiscard["height_units_m"]*100, s=10, color='goldenrod', label= "Discarded Data")
 
     rollingaverage = df["height_units_m"].rolling(window=25, center=True).mean()
-    plt.plot(pd.to_datetime(df["measured_at"], utc=True), rollingaverage*100, color='darkgreen')
+    plt.plot(pd.to_datetime(df["measured_at"], utc=True), rollingaverage*100, color='darkgreen', label= "Rolling Average")
+
+    datearray = pd.to_datetime(df["measured_at"], utc=True)
+    idealgrowth = []
+    
+    start_time = datearray.iloc[0]
+    start_height = list(df["height_units_m"])[0]*100
+    
+
+    '''
+    Later, we will want alerts if a non-discarded point drops below this floor'''
+    for timestamp in datearray:
+        duration = timestamp - start_time
+        net_hours_passed = duration.total_seconds() / 3600
+
+        hours_to_11cm = 3 * 7 * 24 #weeks in hours
+        growth_rate = .01
+        height_max = 18-start_height  #this is the physical height of the light array. we start pruning the plants
+
+        #sigmoidal growth estimation
+        growth_value = height_max * (1 / (1 + math.exp((-1)*growth_rate*(net_hours_passed-hours_to_11cm)))) + start_height - 1.25
+
+        idealgrowth.append(growth_value)
+
+    plt.plot(datearray, idealgrowth, color='red', label="Plant Alert Floor", linestyle='--', alpha = 0.3)
 
     plt.xlabel(f"Measured On")
     plt.ylabel("Height (cm)")
@@ -90,12 +117,12 @@ def generate_height_graph_for_plant_id(plant_id, display_graph=False, clean_data
     plt.grid()
     plt.tight_layout()
     plt.ylim(-1, None)
-
+    plt.legend() #Added a legend and labels
+    plt.savefig(f"{folder}height_graph.png")
     if display_graph:
         plt.show()
-
-    plt.savefig(f"{folder}height_graph.png")
-    plt.close()
+    else:
+        plt.close()
 
     print(f"Generated height graph for plant {plant_id} at {folder}height_graph.png")
 

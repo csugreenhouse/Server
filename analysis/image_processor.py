@@ -101,12 +101,13 @@ def process_images_of_plant(plant_id, beginning_date= None, ending_date=None):
             # display failure
             continue
     database_util.close_connection_to_database(conn)
+    
 
 #process_images_of_plant(1, beginning_date="20260218 12:00:00", ending_date="20260304 12:00:00")
 #process_images_of_plant(5)
 #process_images_of_plant(3, ending_date="20260212 12:00:00")
 #process_images_of_plant(9, beginning_date="20260411 12:00:00")
-#process_images_of_plant(10, beginning_date="20260406 12:00:00")
+process_images_of_plant(10, beginning_date="20260406 12:00:00")
 #process_images_of_plant(11, beginning_date="20260308 12:00:00")
 #process_images_of_plant(12, beginning_date="20260308 12:00:00", ending_date="20260326 12:00:00")
 #process_images_of_plant(13, beginning_date="20260326 12:00:00")
@@ -115,3 +116,4 @@ def process_images_of_plant(plant_id, beginning_date= None, ending_date=None):
 #process_images_of_plant(18, beginning_date="20260311 12:00:00")
 #process_images_of_plant(21, beginning_date="20260408 12:00:00")
 #process_images_of_plant(22, beginning_date="20260404 12:00:00")
+
