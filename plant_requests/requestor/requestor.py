@@ -18,8 +18,7 @@ import plant_requests.utils.image_util as image_util
 import plant_requests.utils.reference_tag_util as reference_util
 import database.database_util as database_util
 import numpy as np
-
-
+import analysis.image_processor as image_processor
 
 
 conn = database_util.open_connection_to_database()
@@ -70,12 +69,10 @@ def main():
                    for response in height_request_response:
                        plant_id = response["plant_id"]
                        raw_file_path = save_image_by_plant_id(plant_id, image)
+                       process_image_by_plant_id(plant_id, raw_file_path)
 
 
-               print(f"image successfully saved by plant id and camera number")
-
-
-               graph_info_by_camera(camera_id, image, camera_parameters,conn)
+               print(f"image successfully saved by plant id and camera number, and processed by plant.")
 
 
                database_util.close_connection_to_database(conn)
@@ -99,6 +96,7 @@ def save_image_by_plant_id(plant_id, image):
        save_path = image_util.save_image_to_server_directory_by_plant(plant_id,image)
        cv2.imwrite(str(f"plant_requests/requestor/by_plant/{plant_id}_out.jpg"), image)
        print(f"\033[92mimage successfully saved by plant to : {save_path}\033[0m")
+       return save_path
    except Exception as e:
        print(e)
        print("\033[91mFailed to save image by plant, for plant no. {plant_id}\033[0m")
@@ -108,26 +106,20 @@ def save_image_by_camera_id(camera_id, image):
    try:
        save_path = image_util.save_image_to_server_directory(camera_id,image)
        cv2.imwrite(str(f"plant_requests/requestor/by_camera/{camera_id}.jpg"), image)
-       print(f"image successfully saved by camera number to : {save_path}")
+       print(f"\033[92mimage successfully saved by camera number to : {save_path}\033[0m")
    except Exception as e:
        print(e)
        print("\033[91mFailed to save image by camera, for camera no. {camera_id}\033[0m")
 
-
-def graph_info_by_camera(camera_id, image, camera_parameters, conn):
+#get image path from the saved by plant id, then process the image and save the processed image by plant id
+def process_image_by_plant_id(plant_id, image_path):
    try:
-       if image is not None:
-           print("here")
-           reference_tags = reference_util.scan_reference_tags(image,camera_parameters,conn, current_only=True)
-           for reference_tag in reference_tags:
-               response = hr.height_request(image, [reference_tag])
-          
-           graph_path = f"plant_requests/requestor/{camera_id}_graph.jpg"
-           graph_util.plot_height_request_response(image, graph_path,response)
-           print(f"\033[92mgraph successfully saved to : {graph_path}\033[0m")
+       #using the processor
+       save_path = image_processor.process_one_image_of_plant(plant_id, image_path)
+       print(f"\033[92mimage successfully processed by plant and saved to : {save_path}\033[0m")
    except Exception as e:
        print(e)
-       print(f"\033[91mfailed to process height request for camera {camera_parameters['camera_id']}\033[0m")
+       print(f"\033[91mFailed to process image for plant {plant_id}\033[0m")
 
 main()
 
