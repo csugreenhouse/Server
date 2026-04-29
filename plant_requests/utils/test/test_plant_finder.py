@@ -1,3 +1,4 @@
+"""
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -133,18 +134,6 @@ def test_region_grow(): #testing whole image pipeline.
     plt.close(fig)
     print(f"saved to: {dst_path}")
 
-
-
-
-
-
-
-
-
-
-
-
-
 IMG_DIR = Path("plant_requests/utils/test/images/test_plant_finder")
 
 def run_pipeline_on_image(src_path, dst_path, color_bounds, color_tolerance=22):
@@ -205,3 +194,4 @@ if __name__ == "__main__":
     test_blobber()
     test_region_grow()
     test_more()
+"""

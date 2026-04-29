@@ -97,7 +97,7 @@ def main():
 def save_image_by_plant_id(plant_id, image):
    try:
        save_path = image_util.save_image_to_server_directory_by_plant(plant_id,image)
-       cv2.imwrite(str(f"plant_requests/requestor/by_plant/{plant_id}.jpg"), image)
+       cv2.imwrite(str(f"plant_requests/requestor/by_plant/{plant_id}_out.jpg"), image)
        print(f"\033[92mimage successfully saved by plant to : {save_path}\033[0m")
    except Exception as e:
        print(e)
