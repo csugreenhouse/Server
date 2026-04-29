@@ -7,7 +7,7 @@ cd "$SCRIPT_DIR"
 # initialize test database
 bash "$SCRIPT_DIR/run/reset_test_db.sh"
 
-if pytest -s
+if python3 -m pytest -s
 then
   echo "All tests passed"
   exit 0
@@ -16,5 +16,3 @@ fi
 # reset test database
 
 #echo "✅ test database reset after tests"
-
-#pytest -s 

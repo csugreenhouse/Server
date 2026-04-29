@@ -4,9 +4,9 @@ import os
 import pytest
 import cv2
 import warnings
+import sys
 
-
-
+sys.path.append('/srv/samba/Server')
 height_request = importlib.import_module("plant_requests.height_request.height_request")
 scanner_util = importlib.import_module("plant_requests.utils.reference_tag_util")
 graph_util = importlib.import_module("plant_requests.utils.graph_util")
