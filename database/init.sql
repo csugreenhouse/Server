@@ -171,30 +171,35 @@ INSERT INTO camera (
 );
 
 INSERT INTO species (
+  species_id,
   scientific_name,
   common_name,
   upper_hsv,
   lower_hsv
 ) VALUES
 (
+  1,
   'Lactuca sativa (Truchas)',
   'Red Lettuce (Truchas)',
   ARRAY[179, 255, 255],
   ARRAY[150, 50, 50]
 ),
 (
+  2,
   'Lactuca sativa (Little Gem)',
   'Mini Romaine Lettuce (Little Gem)',
   ARRAY[80, 255, 255],
   ARRAY[35, 40, 40]
 ),
 (
+    3,
   'Ocimum basilicum',
   'Basil (Italian Genovese)',
   ARRAY[90, 255, 255],
   ARRAY[30, 60, 60]
 ),
 (
+  4,
   'Mentha spicata',
   'Mint (Common)',
   ARRAY[90, 255, 255],
@@ -254,4 +259,10 @@ Insert Into view (tag_id, plant_id, view_type, image_bound_x_high, image_bound_x
 (2, 5, 'width', 0.5, 0.0, 300),
 (2, 6, 'width', 1.0, .50, 300);
 
--- create color
+
+update view 
+set upper_hsv = s.upper_hsv,
+    lower_hsv = s.lower_hsv
+from species s
+join plant p on p.species_id = s.species_id
+where view.plant_id = p.plant_id;

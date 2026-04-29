@@ -100,9 +100,17 @@ def get_tag_views_from_database(conn, tag_id, current_only=False):
         "WHERE v.tag_id = %s "
         + ("AND v.current = TRUE ;" if current_only else ";")
     )
+    
+    # include an error message if the query fails for easier debugging
+    try:
+        results = execute_query(conn, query, (tag_id,))
+    except Exception as e:
+        print(f"Error occurred while fetching tag views: {e}")
+        raise
 
+    if not results:
+        raise ValueError(f"No views found for tag_id {tag_id}.")
 
-    results = execute_query(conn, query, (tag_id,))
     view = []
     for results_row in results:
         temp_veiw = (
