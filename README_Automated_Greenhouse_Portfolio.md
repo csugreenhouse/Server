@@ -225,9 +225,9 @@ The test suite focuses on the core image-processing behavior:
 
 GitHub Actions runs the automated tests to help catch regressions when the image-processing or database code changes.
 
-## What I Learned
+## What WE Learned
 
-This project taught me how to build software that interacts with real hardware and imperfect physical environments. The most important lesson was that the algorithm is only one part of the system. Camera placement, lighting, database design, debug tooling, and deployment reliability all affect whether the software is useful.
+This project taught us how to build software that interacts with real hardware and imperfect physical environments. The most important lesson was that the algorithm is only one part of the system. Camera placement, lighting, database design, debug tooling, and deployment reliability all affect whether the software is useful.
 
 Key takeaways:
 
@@ -249,8 +249,10 @@ Key takeaways:
 - Package the image-processing pipeline as a cleaner Python module
 - Add more detailed accuracy reports comparing automated and manual measurements over time
 
-## Maintainer
+## Maintainers
 
-**Tyler Carver**  
+**Tyler Carver** AUGUST 2025 - MAY 2026 
 Computer Science and Computer Engineering  
 Interested in embedded software, backend systems, computer vision, automation, and software that interacts with physical hardware.
+
+**Kai Brennan** JANUARY 2026 - CURRENT
