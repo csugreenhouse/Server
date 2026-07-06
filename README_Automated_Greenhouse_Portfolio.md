@@ -4,7 +4,17 @@ A computer vision and data logging system built for a CSU senior design greenhou
 
 The goal was to reduce manual plant measurement by automatically estimating plant height from camera images and making growth data easier to view over time.
 
+<p align="center">
+
+<img width="2548" align="center" height="1402" alt="image" src="https://github.com/user-attachments/assets/f5743cc9-cd1d-47ac-8e0d-e54cc9f940d8" />
+
+<img width="705" align="center" height="1260" alt="image" src="https://github.com/user-attachments/assets/4e939093-d5a0-4673-bfd2-0c22aa0091f2" />
+
+<img width="555" align="center" height="498"  alt="image" src="https://github.com/user-attachments/assets/20fdb808-389a-429e-91b6-e2ede2820abe" />
+
 ![Processed plant height estimation example](plant_requests/requestor/1_graph.jpg)
+
+</p>
 
 <!-- Recommended: add your custom webpage screenshot here before pinning the repo. Example:
 ![Custom greenhouse web dashboard](docs/custom-webpage-ui.png)
